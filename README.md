@@ -12,3 +12,8 @@ A web application to manage lists of ideas, games, books, movies, and TV shows w
 	cd ../frontend
 	npm install
 	```
+
+## Credits
+
+- Project created by Garrett Giordano.
+- Assisted by [ChatGPT](https://openai.com/chatgpt) from OpenAI for technical guidance and code examples.
