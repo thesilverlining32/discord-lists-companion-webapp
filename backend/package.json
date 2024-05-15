@@ -1,0 +1,29 @@
+{
+	"name": "discord-lists-companion-webapp-backend",
+	"version": "1.0.0",
+	"description": "Node.js backend for managing lists with Discord user authentication",
+	"author": "Garrett Giordano <iamthesilverlining@gmail.com>",
+	"license": "MIT",
+	"main": "server.js",
+	"keywords": [
+	  "nodejs",
+	  "discord",
+	  "authentication",
+	  "lists"
+	],
+	"scripts": {
+	  "start": "node server.js",
+	  "dev": "nodemon server.js"
+	},
+	"dependencies": {
+	  "express": "^4.17.1",
+	  "express-session": "^1.17.1",
+	  "mongoose": "^5.9.10",
+	  "passport": "^0.4.1",
+	  "passport-discord": "^0.1.4"
+	},
+	"devDependencies": {
+	  "nodemon": "^2.0.4"
+	},
+	"credits": "Assisted by ChatGPT from OpenAI for technical guidance and code examples"
+  }
