@@ -8,48 +8,39 @@ A web application to manage lists of ideas, games, books, movies, and TV shows w
 ### Backend
 
 1. Clone the repository
-2. Navigate to the `backend` directory:
+2. Navigate to the project directory:
    ```bash
-   cd backend
+   cd /path/to/your/project
    ```
-3. Install dependencies:
+3. Copy the example Docker Compose file and update the environment variables:
    ```bash
-   npm install
+   cp docker-compose.example.yml docker-compose.yml
    ```
-4. Create a `.env` file in the `backend` directory with the following content:
-   ```
-   DISCORD_CLIENT_ID=your_discord_client_id
-   DISCORD_CLIENT_SECRET=your_discord_client_secret
-   SESSION_SECRET=your_session_secret
-   ```
-   - Replace `your_discord_client_id` with your Discord client ID.
-   - Replace `your_discord_client_secret` with your Discord client secret.
-   - Replace `your_session_secret` with a long, random string for session security.
-5. Start the backend server:
-   ```bash
-   npm run dev
+4. Edit `docker-compose.yml` and replace the placeholder values with your actual credentials:
+   ```yaml
+   environment:
+     DISCORD_CLIENT_ID: your_discord_client_id
+     DISCORD_CLIENT_SECRET: your_discord_client_secret
+     SESSION_SECRET: your_session_secret
+     MONGODB_URI: mongodb://mongo:27017/my-list-app
    ```
 
-### Frontend
+### Running the Application
 
-1. Navigate to the `frontend` directory:
+1. Build the Docker images:
    ```bash
-   cd frontend
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the frontend development server:
-   ```bash
-   npm start
+   docker-compose build
    ```
 
-## Usage
+2. Start the containers:
+   ```bash
+   docker-compose up
+   ```
 
-- Open `http://localhost:3000` in your browser.
-- Log in with your Discord account.
-- Manage your lists of ideas, games, books, movies, and TV shows.
+3. To stop the containers:
+   ```bash
+   docker-compose down
+   ```
 
 ## Credits
 
