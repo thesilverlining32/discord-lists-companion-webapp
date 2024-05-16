@@ -2,6 +2,8 @@ const express = require('express');
 const session = require('express-session');
 const mongoose = require('mongoose');
 const passport = require('passport');
+const morgan = require('morgan');
+const path = require('path');
 const authRoutes = require('./routes/auth');
 const listRoutes = require('./routes/lists');
 require('./config/passport');
@@ -9,7 +11,10 @@ require('./config/passport');
 const app = express();
 app.use(express.json());
 
-// Use environment variable for MongoDB connection
+// Use morgan to log HTTP requests
+app.use(morgan('dev'));
+
+// MongoDB Connection
 const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/my-list-app';
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
 
@@ -21,9 +26,9 @@ db.once('open', () => {
 
 // Session setup
 app.use(session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
 }));
 
 app.use(passport.initialize());
