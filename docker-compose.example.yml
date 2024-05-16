@@ -17,6 +17,7 @@ services:
       DISCORD_CLIENT_SECRET: your_discord_client_secret
       SESSION_SECRET: your_session_secret
       MONGODB_URI: mongodb://mongo:27017/my-list-app
+      REACT_APP_BACKEND_URL: http://localhost:3000
     ports:
       - "3000:3000"
     depends_on:

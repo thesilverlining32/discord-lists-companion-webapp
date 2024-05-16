@@ -21,6 +21,10 @@ RUN cd frontend && npm install
 # Copy all the source code
 COPY . .
 
+# Set build argument for the frontend build
+ARG REACT_APP_BACKEND_URL
+ENV REACT_APP_BACKEND_URL=${REACT_APP_BACKEND_URL}
+
 # Build the frontend
 RUN cd frontend && npm run build
 

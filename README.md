@@ -23,6 +23,7 @@ A web application to manage lists of ideas, games, books, movies, and TV shows w
      DISCORD_CLIENT_SECRET: your_discord_client_secret
      SESSION_SECRET: your_session_secret
      MONGODB_URI: mongodb://mongo:27017/my-list-app
+	 REACT_APP_BACKEND_URL: http://localhost:3000
    ```
 
 ### Running the Application

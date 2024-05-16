@@ -22,7 +22,8 @@
 	  "axios": "^0.21.1",
 	  "react": "^17.0.2",
 	  "react-dom": "^17.0.2",
-	  "react-scripts": "4.0.3"
+	  "react-scripts": "4.0.3",
+	  "react-router-dom": "^5.2.0"
 	},
 	"devDependencies": {
 	  "http-proxy-middleware": "^2.0.1"
@@ -38,6 +39,5 @@
 		"last 1 firefox version",
 		"last 1 safari version"
 	  ]
-	},
-	"credits": "Assisted by ChatGPT from OpenAI for technical guidance and code examples"
+	}
   }

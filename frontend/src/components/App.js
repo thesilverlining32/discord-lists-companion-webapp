@@ -1,24 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React from 'react';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import Login from './Login';
 import List from './List';
 
 function App() {
-    const [lists, setLists] = useState([]);
-
-    useEffect(() => {
-        axios.get('/api/lists').then(response => {
-            setLists(response.data);
-        });
-    }, []);
-
-    return (
-        <div>
-            <h1>Lists</h1>
-            {lists.map(list => (
-                <List key={list._id} list={list} />
-            ))}
-        </div>
-    );
+  return (
+    <Router>
+      <Switch>
+        <Route path="/login" component={Login} />
+        <Route path="/" component={List} />
+      </Switch>
+    </Router>
+  );
 }
 
 export default App;
