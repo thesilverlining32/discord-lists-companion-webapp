@@ -6,7 +6,7 @@ services:
     ports:
       - "27017:27017"
     volumes:
-      - mongo-data:/data/db
+      - /mnt/disk3/mongo_db_discord_bots:/data/db
 
   backend:
     build: ./backend
@@ -19,6 +19,3 @@ services:
       - "3000:3000"
     depends_on:
       - mongo
-
-volumes:
-  mongo-data:
