@@ -5,7 +5,7 @@ FROM node:14
 WORKDIR /usr/src/app
 
 # Install git and npm
-RUN apt-get update && apt-get install -y git npm
+# RUN apt-get update && apt-get install -y git
 
 # Clone the repository
 # RUN git clone https://github.com/thesilverlining32/discord-lists-companion-webapp.git .
