@@ -16,6 +16,7 @@ router.post('/api/lists/:listId/items', (req, res) => {
     const newItem = new ListItem({
         content: req.body.content,
         list: req.params.listId,
+        createdBy: req.user._id,  // Add this line
     });
     newItem.save().then(item => {
         List.findById(req.params.listId).then(list => {
@@ -26,7 +27,10 @@ router.post('/api/lists/:listId/items', (req, res) => {
 });
 
 router.get('/api/lists', (req, res) => {
-    List.find().populate('createdBy').populate('items').then(lists => res.json(lists));
+    List.find().populate('createdBy').populate({
+        path: 'items',
+        populate: { path: 'createdBy' }  // Add this line to populate creator information
+    }).then(lists => res.json(lists));
 });
 
 module.exports = router;
