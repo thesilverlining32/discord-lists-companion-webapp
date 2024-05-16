@@ -9,7 +9,9 @@ services:
       - /mnt/disk3/mongo_db_discord_bots:/data/db
 
   backend:
-    build: ./backend
+    build:
+      context: .
+      dockerfile: Dockerfile
     environment:
       DISCORD_CLIENT_ID: your_discord_client_id
       DISCORD_CLIENT_SECRET: your_discord_client_secret
