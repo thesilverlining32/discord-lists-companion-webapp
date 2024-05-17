@@ -8,7 +8,7 @@ router.post('/api/lists', (req, res) => {
     console.log('Request to create list:', req.body); // Log the request body
     const newList = new List({
         name: req.body.name,
-        createdBy: req.user ? req.user._id : 'anonymous', // Ensure createdBy is set
+        createdBy: req.user ? req.user._id : null, // Set createdBy to null if req.user is not present
     });
     newList.save()
         .then(list => {
@@ -30,7 +30,7 @@ router.post('/api/lists/:listId/items', (req, res) => {
     const newItem = new ListItem({
         content: req.body.content,
         list: req.params.listId,
-        createdBy: req.user ? req.user._id : 'anonymous', // Ensure createdBy is set
+        createdBy: req.user ? req.user._id : null, // Set createdBy to null if req.user is not present
     });
     newItem.save()
         .then(item => {
