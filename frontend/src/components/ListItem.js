@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, TextField, Button, List as MUIList, ListItem as MUIListItem, ListItemText, Card, CardContent, CardActions } from '@mui/material';
+import { Box, TextField, Button, List as MUIList, ListItem as MUIListItem, ListItemText, Card, CardActions } from '@mui/material';
 
 const ListItem = ({ listId }) => {
   const [items, setItems] = useState([]);

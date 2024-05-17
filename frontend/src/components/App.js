@@ -1,10 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import List from './List';
-import { AppBar, Toolbar, Typography, Container, Button } from '@mui/material';
+import Layout from './Layout';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { CssBaseline, Typography, Container } from '@mui/material';
+
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#7289da',
+    },
+    background: {
+      default: '#2c2f33',
+      paper: '#23272a',
+    },
+    text: {
+      primary: '#ffffff',
+    },
+  },
+});
 
 const App = () => {
   const [user, setUser] = useState(null);
+  const [selectedListId, setSelectedListId] = useState(null);
 
   useEffect(() => {
     axios.get(`${process.env.REACT_APP_BACKEND_URL}/auth/status`)
@@ -26,30 +45,31 @@ const App = () => {
       });
   };
 
+  const handleSelectList = (listId) => {
+    setSelectedListId(listId);
+  };
+
   return (
-    <div>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            My List App
-          </Typography>
-          {user ? (
-            <Button color="inherit" onClick={handleLogout}>Logout</Button>
-          ) : (
-            <Button color="inherit" href={`${process.env.REACT_APP_BACKEND_URL}/auth/discord`}>Login with Discord</Button>
-          )}
-        </Toolbar>
-      </AppBar>
-      <Container sx={{ mt: 4 }}>
-        {user ? (
-          <List />
-        ) : (
-          <Typography variant="h6" sx={{ mt: 4 }}>
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      {user ? (
+        <Layout
+          lists={user.lists} // Pass lists from user if available
+          onSelectList={handleSelectList}
+          selectedListId={selectedListId}
+          handleLogout={handleLogout}
+          user={user}
+        >
+          <List selectedListId={selectedListId} />
+        </Layout>
+      ) : (
+        <Container sx={{ mt: 4 }}>
+          <Typography variant="h6">
             Please log in to manage your lists.
           </Typography>
-        )}
-      </Container>
-    </div>
+        </Container>
+      )}
+    </ThemeProvider>
   );
 };
 

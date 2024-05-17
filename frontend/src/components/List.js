@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ListItem from './ListItem';
-import { Box, TextField, Button, Typography, List as MUIList, ListItem as MUIListItem, ListItemText, Card, CardContent, CardActions } from '@mui/material';
+import { Box, TextField, Button, Typography, Card, CardContent } from '@mui/material';
 
-const List = () => {
+const List = ({ selectedListId }) => {
   const [lists, setLists] = useState([]);
   const [listName, setListName] = useState('');
 
@@ -32,6 +32,8 @@ const List = () => {
       });
   };
 
+  const selectedList = lists.find(list => list._id === selectedListId);
+
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h4" gutterBottom>Lists</Typography>
@@ -45,18 +47,20 @@ const List = () => {
         />
         <Button variant="contained" color="primary" onClick={handleAddList}>Add List</Button>
       </Box>
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-        {lists.map(list => (
-          <Card key={list._id}>
-            <CardContent>
-              <Typography variant="h5" component="div">
-                {list.name}
-              </Typography>
-              <ListItem listId={list._id} />
-            </CardContent>
-          </Card>
-        ))}
-      </Box>
+      {selectedList ? (
+        <Card>
+          <CardContent>
+            <Typography variant="h5" component="div">
+              {selectedList.name}
+            </Typography>
+            <ListItem listId={selectedList._id} />
+          </CardContent>
+        </Card>
+      ) : (
+        <Typography variant="h6" color="textSecondary">
+          Select a list to view items
+        </Typography>
+      )}
     </Box>
   );
 };
