@@ -4,6 +4,9 @@ FROM node:20.13.1
 # Set the working directory to /usr/src/app
 WORKDIR /usr/src/app
 
+# Set NODE_OPTIONS to use legacy OpenSSL providers
+ENV NODE_OPTIONS=--openssl-legacy-provider
+
 # Install git and npm
 # RUN apt-get update && apt-get install -y git
 
