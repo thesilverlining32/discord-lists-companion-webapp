@@ -26,6 +26,9 @@ const List = () => {
   }, []);
 
   const handleAddList = () => {
+    // Log the request data to debug
+    console.log('Creating list with name:', listName);
+
     // Add a new list by making a POST request to the backend
     axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/lists`, { name: listName })
       .then(response => {

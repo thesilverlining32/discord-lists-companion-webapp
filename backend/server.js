@@ -41,13 +41,14 @@ app.use(passport.session());
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Add a route for the root URL to serve the index.html file
+// Register API routes before the catch-all route
+app.use(authRoutes);
+app.use(listRoutes);
+
+// Add a catch-all route for serving the frontend
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
-
-app.use(authRoutes);
-app.use(listRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
