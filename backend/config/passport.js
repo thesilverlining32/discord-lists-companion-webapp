@@ -15,7 +15,7 @@ passport.deserializeUser((id, done) => {
 passport.use(new DiscordStrategy({
     clientID: process.env.DISCORD_CLIENT_ID,
     clientSecret: process.env.DISCORD_CLIENT_SECRET,
-    callbackURL: '/auth/discord/callback',
+    callbackURL: process.env.REDIRECT_URI,  // Ensure this matches the redirect URL in Discord Developer Portal
     scope: ['identify', 'email', 'guilds']
 }, (accessToken, refreshToken, profile, done) => {
     User.findOneAndUpdate({ discordId: profile.id }, {

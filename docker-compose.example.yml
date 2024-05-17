@@ -19,6 +19,7 @@ services:
       DISCORD_CLIENT_SECRET: your_discord_client_secret
       SESSION_SECRET: your_session_secret
       MONGODB_URI: mongodb://mongo:27017/my-list-app
+      REDIRECT_URI: https://discord.localhost.com/auth/discord/callback
     ports:
       - "3000:3000"
     depends_on:
