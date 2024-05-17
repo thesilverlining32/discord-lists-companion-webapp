@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(morgan('dev'));
 
 // Enable CORS for all routes
-app.use(cors()); // Add this line
+app.use(cors());
 
 // MongoDB Connection
 const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/my-list-app';
