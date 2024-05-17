@@ -6,10 +6,13 @@ passport.serializeUser((user, done) => {
     done(null, user.id);
 });
 
-passport.deserializeUser((id, done) => {
-    User.findById(id, (err, user) => {
-        done(err, user);
-    });
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findById(id);
+        done(null, user);
+    } catch (err) {
+        done(err);
+    }
 });
 
 passport.use(new DiscordStrategy({
@@ -17,19 +20,23 @@ passport.use(new DiscordStrategy({
     clientSecret: process.env.DISCORD_CLIENT_SECRET,
     callbackURL: process.env.REDIRECT_URI,
     scope: ['identify', 'email', 'guilds']
-}, (accessToken, refreshToken, profile, done) => {
+}, async (accessToken, refreshToken, profile, done) => {
     console.log('Discord profile:', profile); // Log Discord profile
-    User.findOneAndUpdate({ discordId: profile.id }, {
-        discordId: profile.id,
-        username: profile.username,
-        discriminator: profile.discriminator,
-        avatar: profile.avatar,
-        email: profile.email
-    }, { upsert: true, new: true }, (err, user) => {
-        if (err) {
-            console.error('Error finding/updating user:', err); // Log error
-            return done(err);
-        }
+    try {
+        const user = await User.findOneAndUpdate(
+            { discordId: profile.id },
+            {
+                discordId: profile.id,
+                username: profile.username,
+                discriminator: profile.discriminator,
+                avatar: profile.avatar,
+                email: profile.email
+            },
+            { upsert: true, new: true }
+        );
         return done(null, user);
-    });
+    } catch (err) {
+        console.error('Error finding/updating user:', err); // Log error
+        return done(err);
+    }
 }));
