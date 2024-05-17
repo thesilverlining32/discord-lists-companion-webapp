@@ -15,9 +15,10 @@ passport.deserializeUser((id, done) => {
 passport.use(new DiscordStrategy({
     clientID: process.env.DISCORD_CLIENT_ID,
     clientSecret: process.env.DISCORD_CLIENT_SECRET,
-    callbackURL: process.env.REDIRECT_URI,  // Ensure this matches the redirect URL in Discord Developer Portal
+    callbackURL: process.env.REDIRECT_URI,
     scope: ['identify', 'email', 'guilds']
 }, (accessToken, refreshToken, profile, done) => {
+    console.log('Discord profile:', profile); // Log Discord profile
     User.findOneAndUpdate({ discordId: profile.id }, {
         discordId: profile.id,
         username: profile.username,
@@ -25,6 +26,10 @@ passport.use(new DiscordStrategy({
         avatar: profile.avatar,
         email: profile.email
     }, { upsert: true, new: true }, (err, user) => {
-        return done(err, user);
+        if (err) {
+            console.error('Error finding/updating user:', err); // Log error
+            return done(err);
+        }
+        return done(null, user);
     });
 }));

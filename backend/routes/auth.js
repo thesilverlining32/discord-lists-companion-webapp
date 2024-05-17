@@ -8,12 +8,16 @@ router.get('/auth/discord', passport.authenticate('discord'));
 router.get('/auth/discord/callback', passport.authenticate('discord', {
     failureRedirect: '/'
 }), (req, res) => {
+    console.log('Authenticated user:', req.user); // Log authenticated user
     res.redirect('/');
 });
 
 router.get('/auth/logout', (req, res) => {
     req.logout((err) => {
-        if (err) return next(err);
+        if (err) {
+            console.error('Logout error:', err);
+            return next(err);
+        }
         res.redirect('/');
     });
 });
