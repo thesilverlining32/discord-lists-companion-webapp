@@ -4,19 +4,26 @@ const ListItem = require('../models/ListItem');
 
 const router = express.Router();
 
-router.post('/api/lists', (req, res) => {
-    console.log('Request to create list:', req.body); // Log the request body
+const isAuthenticated = (req, res, next) => {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    res.status(401).json({ error: 'Unauthorized' });
+};
+
+router.post('/api/lists', isAuthenticated, (req, res) => {
+    console.log('Request to create list:', req.body);
     const newList = new List({
         name: req.body.name,
-        createdBy: req.user ? req.user._id : null, // Set createdBy to null if req.user is not present
+        createdBy: req.user._id,
     });
     newList.save()
         .then(list => {
-            console.log('List created:', list); // Log the created list
+            console.log('List created:', list);
             res.json(list);
         })
         .catch(err => {
-            console.error('Error creating list:', err); // Log the error
+            console.error('Error creating list:', err);
             res.status(500).json(err);
         });
 });
@@ -25,12 +32,12 @@ router.get('/api/lists', (req, res) => {
     List.find().populate('items').then(lists => res.json(lists)).catch(err => res.status(500).json(err));
 });
 
-router.post('/api/lists/:listId/items', (req, res) => {
-    console.log('Request to create item:', req.body); // Log the request body
+router.post('/api/lists/:listId/items', isAuthenticated, (req, res) => {
+    console.log('Request to create item:', req.body);
     const newItem = new ListItem({
         content: req.body.content,
         list: req.params.listId,
-        createdBy: req.user ? req.user._id : null, // Set createdBy to null if req.user is not present
+        createdBy: req.user._id,
     });
     newItem.save()
         .then(item => {
@@ -39,7 +46,7 @@ router.post('/api/lists/:listId/items', (req, res) => {
                 list.save().then(() => res.json(item));
             });
         }).catch(err => {
-            console.error('Error creating item:', err); // Log the error
+            console.error('Error creating item:', err);
             res.status(500).json(err);
         });
 });
