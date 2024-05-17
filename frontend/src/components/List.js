@@ -17,8 +17,10 @@ const List = () => {
   }, []);
 
   const handleAddList = () => {
+    console.log("Button clicked, adding list:", listName);
     axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/lists`, { name: listName })
       .then(response => {
+        console.log("List added:", response.data);
         setLists([...lists, response.data]);
         setListName('');
       })
@@ -41,6 +43,7 @@ const List = () => {
         {lists.map(list => (
           <li key={list._id}>
             <h2>{list.name}</h2>
+            {/* Display the list items */}
             <ListItem listId={list._id} />
           </li>
         ))}

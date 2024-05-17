@@ -6,6 +6,7 @@ const ListItem = ({ listId }) => {
   const [itemContent, setItemContent] = useState('');
 
   useEffect(() => {
+    // Fetch items for the given list
     axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items`)
       .then(response => {
         setItems(response.data);
@@ -16,8 +17,10 @@ const ListItem = ({ listId }) => {
   }, [listId]);
 
   const handleAddItem = () => {
+    // Add a new item to the list by making a POST request to the backend
     axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items`, { content: itemContent })
       .then(response => {
+        // Update the state to include the new item
         setItems([...items, response.data]);
         setItemContent('');
       })
