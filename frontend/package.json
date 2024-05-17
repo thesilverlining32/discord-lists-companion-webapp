@@ -6,38 +6,39 @@
 	"license": "MIT",
 	"main": "src/index.js",
 	"keywords": [
-	  "react",
-	  "frontend",
-	  "discord",
-	  "authentication",
-	  "lists"
+		"react",
+		"frontend",
+		"discord",
+		"authentication",
+		"lists"
 	],
 	"scripts": {
-	  "start": "react-scripts start",
-	  "build": "react-scripts build",
-	  "test": "react-scripts test",
-	  "eject": "react-scripts eject"
+		"start": "react-scripts start",
+		"build": "react-scripts build",
+		"test": "react-scripts test",
+		"eject": "react-scripts eject"
 	},
 	"dependencies": {
-	  "axios": "^0.21.1",
-	  "react": "^17.0.2",
-	  "react-dom": "^17.0.2",
-	  "react-scripts": "4.0.3",
-	  "react-router-dom": "^5.2.0"
+		"axios": "^1.6.8",
+		"react": "^18.3.1",
+		"react-dom": "^18.3.1",
+		"react-router-dom": "^6.23.1",
+		"react-scripts": "^5.0.1"
 	},
 	"devDependencies": {
-	  "http-proxy-middleware": "^2.0.1"
+		"@babel/plugin-proposal-private-property-in-object": "^7.14.5",
+		"http-proxy-middleware": "^2.0.1"
 	},
 	"browserslist": {
-	  "production": [
-		">0.2%",
-		"not dead",
-		"not op_mini all"
-	  ],
-	  "development": [
-		"last 1 chrome version",
-		"last 1 firefox version",
-		"last 1 safari version"
-	  ]
+		"production": [
+			">0.2%",
+			"not dead",
+			"not op_mini all"
+		],
+		"development": [
+			"last 1 chrome version",
+			"last 1 firefox version",
+			"last 1 safari version"
+		]
 	}
-  }
+}
