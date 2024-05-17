@@ -9,7 +9,15 @@ const ListItem = ({ listId }) => {
     // Fetch items for the given list
     axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items`)
       .then(response => {
-        setItems(response.data);
+        // Log the response to debug
+        console.log('API response:', response.data);
+
+        // Ensure the data is an array before setting it to state
+        if (Array.isArray(response.data)) {
+          setItems(response.data);
+        } else {
+          console.error('Expected an array but got:', response.data);
+        }
       })
       .catch(error => {
         console.error('There was an error fetching the items!', error);
@@ -21,7 +29,11 @@ const ListItem = ({ listId }) => {
     axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items`, { content: itemContent })
       .then(response => {
         // Update the state to include the new item
-        setItems([...items, response.data]);
+        if (response.data) {
+          setItems([...items, response.data]);
+        } else {
+          console.error('Expected an object but got:', response.data);
+        }
         setItemContent('');
       })
       .catch(error => {
@@ -39,9 +51,13 @@ const ListItem = ({ listId }) => {
       />
       <button onClick={handleAddItem}>Add Item</button>
       <ul>
-        {items.map(item => (
-          <li key={item._id}>{item.content}</li>
-        ))}
+        {Array.isArray(items) ? (
+          items.map(item => (
+            <li key={item._id}>{item.content}</li>
+          ))
+        ) : (
+          <p>No items available</p>
+        )}
       </ul>
     </div>
   );
