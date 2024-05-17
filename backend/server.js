@@ -2,13 +2,21 @@ const express = require('express');
 const session = require('express-session');
 const mongoose = require('mongoose');
 const passport = require('passport');
+const morgan = require('morgan');
 const path = require('path');
+const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const listRoutes = require('./routes/lists');
 require('./config/passport');
 
 const app = express();
 app.use(express.json());
+
+// Use morgan to log HTTP requests
+app.use(morgan('dev'));
+
+// Enable CORS for all routes
+app.use(cors()); // Add this line
 
 // MongoDB Connection
 const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/my-list-app';
