@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, TextField, Button, List as MUIList, ListItem as MUIListItem, ListItemText } from '@mui/material';
+import { Box, TextField, Button, List as MUIList, ListItem as MUIListItem, ListItemText, Card, CardContent, CardActions } from '@mui/material';
 
 const ListItem = ({ listId }) => {
   const [items, setItems] = useState([]);
@@ -32,16 +32,17 @@ const ListItem = ({ listId }) => {
   };
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+    <Box>
+      <CardActions>
         <TextField
           label="New item"
           variant="outlined"
           value={itemContent}
           onChange={e => setItemContent(e.target.value)}
+          fullWidth
         />
         <Button variant="contained" color="primary" onClick={handleAddItem}>Add Item</Button>
-      </Box>
+      </CardActions>
       <MUIList>
         {items.map(item => (
           <MUIListItem key={item._id}>

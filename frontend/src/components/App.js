@@ -40,7 +40,7 @@ const App = () => {
           )}
         </Toolbar>
       </AppBar>
-      <Container>
+      <Container sx={{ mt: 4 }}>
         {user ? (
           <List />
         ) : (
