@@ -48,7 +48,7 @@ const List = ({ selectedListId }) => {
         <Button variant="contained" color="primary" onClick={handleAddList}>Add List</Button>
       </Box>
       {selectedList ? (
-        <Card>
+        <Card sx={{ mb: 2 }}>
           <CardContent>
             <Typography variant="h5" component="div">
               {selectedList.name}
