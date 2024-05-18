@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, TextField, Button, List as MUIList, ListItem as MUIListItem, ListItemText, Card, CardActions, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Snackbar, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
+import { Box, TextField, Button, List as MUIList, ListItem as MUIListItem, ListItemText, Card, CardActions, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Snackbar, MenuItem, Select, InputLabel, FormControl, CircularProgress } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import MuiAlert from '@mui/material/Alert';
@@ -11,6 +11,7 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 
 const ListItem = ({ listId }) => {
   const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [itemContent, setItemContent] = useState('');
   const [itemDescription, setItemDescription] = useState('');
   const [editItemId, setEditItemId] = useState(null);
@@ -26,9 +27,11 @@ const ListItem = ({ listId }) => {
         if (Array.isArray(response.data)) {
           setItems(response.data);
         }
+        setLoading(false);
       })
       .catch(error => {
         console.error('There was an error fetching the items!', error);
+        setLoading(false);
       });
   }, [listId]);
 
@@ -154,25 +157,29 @@ const ListItem = ({ listId }) => {
           </Select>
         </FormControl>
       </Box>
-      <MUIList>
-        {sortedItems.map(item => (
-          <MUIListItem key={item._id} secondaryAction={
-            <>
-              <IconButton edge="end" aria-label="edit" onClick={() => handleEditItem(item._id)}>
-                <EditIcon />
-              </IconButton>
-              <IconButton edge="end" aria-label="delete" onClick={() => handleOpenDeleteDialog(item._id)}>
-                <DeleteIcon />
-              </IconButton>
-            </>
-          }>
-            <ListItemText
-              primary={item.content}
-              secondary={item.description ? item.description : null}
-            />
-          </MUIListItem>
-        ))}
-      </MUIList>
+      {loading ? (
+        <CircularProgress />
+      ) : (
+        <MUIList>
+          {sortedItems.map(item => (
+            <MUIListItem key={item._id} secondaryAction={
+              <>
+                <IconButton edge="end" aria-label="edit" onClick={() => handleEditItem(item._id)}>
+                  <EditIcon />
+                </IconButton>
+                <IconButton edge="end" aria-label="delete" onClick={() => handleOpenDeleteDialog(item._id)}>
+                  <DeleteIcon />
+                </IconButton>
+              </>
+            }>
+              <ListItemText
+                primary={item.content}
+                secondary={item.description ? item.description : null}
+              />
+            </MUIListItem>
+          ))}
+        </MUIList>
+      )}
       <Dialog
         open={openDeleteDialog}
         onClose={handleCloseDeleteDialog}
