@@ -64,7 +64,7 @@ const App = () => {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      <Header user={user} handleLogout={handleLogout} />
+      {user && <Header user={user} handleLogout={handleLogout} />}
       {user ? (
         <Layout
           lists={lists}
