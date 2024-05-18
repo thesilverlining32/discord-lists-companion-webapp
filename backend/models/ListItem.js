@@ -1,10 +1,22 @@
 const mongoose = require('mongoose');
 
-const listItemSchema = new mongoose.Schema({
-    content: { type: String, required: true },
-    list: { type: mongoose.Schema.Types.ObjectId, ref: 'List' },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },  // Add this line
-    createdAt: { type: Date, default: Date.now }
-});
+const ListItemSchema = new mongoose.Schema({
+    content: {
+        type: String,
+        required: true,
+    },
+    description: {
+        type: String,
+    },
+    list: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'List',
+        required: true,
+    },
+    createdBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
+}, { timestamps: true });
 
-module.exports = mongoose.model('ListItem', listItemSchema);
+module.exports = mongoose.model('ListItem', ListItemSchema);

@@ -33,9 +33,9 @@ router.get('/api/lists', (req, res) => {
 });
 
 router.post('/api/lists/:listId/items', isAuthenticated, (req, res) => {
-    console.log('Request to create item:', req.body);
     const newItem = new ListItem({
         content: req.body.content,
+        description: req.body.description,
         list: req.params.listId,
         createdBy: req.user._id,
     });
@@ -45,10 +45,7 @@ router.post('/api/lists/:listId/items', isAuthenticated, (req, res) => {
                 list.items.push(item);
                 list.save().then(() => res.json(item));
             });
-        }).catch(err => {
-            console.error('Error creating item:', err);
-            res.status(500).json(err);
-        });
+        }).catch(err => res.status(500).json(err));
 });
 
 router.get('/api/lists/:listId/items', (req, res) => {
