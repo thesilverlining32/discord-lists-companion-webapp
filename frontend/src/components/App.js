@@ -4,7 +4,7 @@ import List from './List';
 import Layout from './Layout';
 import Header from './Header';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { CssBaseline, Container, Typography } from '@mui/material';
+import { CssBaseline, Container, Typography, Box, Button } from '@mui/material';
 
 const darkTheme = createTheme({
   palette: {
@@ -77,9 +77,28 @@ const App = () => {
         </Layout>
       ) : (
         <Container sx={{ mt: 4 }}>
-          <Typography variant="h6">
-            Please log in to manage your lists.
-          </Typography>
+          <Box
+            display="flex"
+            flexDirection="column"
+            justifyContent="center"
+            alignItems="center"
+            height="80vh"
+          >
+            <Typography variant="h4" gutterBottom>
+              Welcome to My List App
+            </Typography>
+            <Typography variant="h6" gutterBottom>
+              Please log in to manage your lists.
+            </Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              href={`${process.env.REACT_APP_BACKEND_URL}/auth/discord`}
+              sx={{ mt: 2 }}
+            >
+              Login with Discord
+            </Button>
+          </Box>
         </Container>
       )}
     </ThemeProvider>
