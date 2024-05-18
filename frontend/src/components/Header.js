@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { AppBar, Toolbar, Typography, Avatar, Box, Menu, MenuItem, Button } from '@mui/material';
+import React, { useState } from 'react';
+import { AppBar, Toolbar, Typography, Avatar, Box, Menu, MenuItem } from '@mui/material';
+import octopusLogo from '../assets/octopus_logo.png';
 
-const Header = ({ user, handleLogout }) => {
+const Header = ({ user }) => {
   const [anchorEl, setAnchorEl] = useState(null);
 
   const handleMenuOpen = (event) => {
@@ -14,12 +14,13 @@ const Header = ({ user, handleLogout }) => {
   };
 
   return (
-    <AppBar position="static">
+    <AppBar position="relative" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
       <Toolbar>
+        <img src={octopusLogo} alt="Logo" style={{ height: '50px', marginRight: '20px' }} />
         <Typography variant="h6" style={{ flexGrow: 1 }}>
           My List App
         </Typography>
-        {user ? (
+        {user && (
           <Box display="flex" alignItems="center">
             <Avatar src={user.avatar} alt={user.username} onClick={handleMenuOpen} />
             <Typography variant="body1" style={{ marginLeft: '10px' }}>
@@ -32,13 +33,9 @@ const Header = ({ user, handleLogout }) => {
               onClose={handleMenuClose}
             >
               <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-              <MenuItem onClick={handleLogout}>Logout</MenuItem>
+              <MenuItem onClick={() => { window.location.href = '/auth/logout'; }}>Logout</MenuItem>
             </Menu>
           </Box>
-        ) : (
-          <Button color="inherit" href={`${process.env.REACT_APP_BACKEND_URL}/auth/discord`}>
-            Login with Discord
-          </Button>
         )}
       </Toolbar>
     </AppBar>

@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import List from './List';
 import Layout from './Layout';
-import Header from './Header';
+import Header from './Header'; // Import the header
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { CssBaseline, Typography, Container, Button, Box } from '@mui/material';
+import { CssBaseline, Typography, Container, Box, Button } from '@mui/material';
+import octopusLogo from '../assets/octopus_logo.png'; // Correct import path
 
 const darkTheme = createTheme({
   palette: {
@@ -64,28 +65,33 @@ const App = () => {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      {user && <Header user={user} handleLogout={handleLogout} />}
       {user ? (
-        <Layout
-          lists={lists}
-          onSelectList={handleSelectList}
-          selectedListId={selectedListId}
-          handleLogout={handleLogout}
-          user={user}
-        >
-          <List selectedListId={selectedListId} />
-        </Layout>
+        <>
+          <Header user={user} />
+          <Layout
+            lists={lists}
+            onSelectList={handleSelectList}
+            selectedListId={selectedListId}
+            handleLogout={handleLogout}
+            user={user}
+          >
+            <List selectedListId={selectedListId} />
+          </Layout>
+        </>
       ) : (
-        <Container sx={{ mt: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', height: '100vh' }}>
-          <Typography variant="h4" gutterBottom>
-            Welcome to My List App
-          </Typography>
-          <Typography variant="h6" gutterBottom>
-            Please log in to manage your lists.
-          </Typography>
-          <Button color="primary" variant="contained" href={`${process.env.REACT_APP_BACKEND_URL}/auth/discord`}>
-            Login with Discord
-          </Button>
+        <Container sx={{ mt: 4 }}>
+          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="100vh">
+            <img src={octopusLogo} alt="Logo" style={{ height: '100px', marginBottom: '20px' }} />
+            <Typography variant="h4" gutterBottom>
+              Welcome to My List App
+            </Typography>
+            <Typography variant="h6" gutterBottom>
+              Please log in to manage your lists.
+            </Typography>
+            <Button variant="contained" color="primary" href={`${process.env.REACT_APP_BACKEND_URL}/auth/discord`}>
+              Login with Discord
+            </Button>
+          </Box>
         </Container>
       )}
     </ThemeProvider>
