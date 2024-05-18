@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import List from './List';
 import Layout from './Layout';
+import Header from './Header';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { CssBaseline, Typography, Container, AppBar, Toolbar, Button } from '@mui/material';
+import { CssBaseline, Container, Typography } from '@mui/material';
 
 const darkTheme = createTheme({
   palette: {
@@ -63,18 +64,7 @@ const App = () => {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            My List App
-          </Typography>
-          {user ? (
-            <Button color="inherit" onClick={handleLogout}>Logout</Button>
-          ) : (
-            <Button color="inherit" href={`${process.env.REACT_APP_BACKEND_URL}/auth/discord`}>Login with Discord</Button>
-          )}
-        </Toolbar>
-      </AppBar>
+      <Header user={user} onLogout={handleLogout} />
       {user ? (
         <Layout
           lists={lists}
