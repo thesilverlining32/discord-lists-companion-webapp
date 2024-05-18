@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { AppBar, Toolbar, Typography, Button, Avatar, Box } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Avatar, Box, Menu, MenuItem } from '@mui/material';
 
 const Header = () => {
   const [user, setUser] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
 
   useEffect(() => {
     axios.get(`${process.env.REACT_APP_BACKEND_URL}/auth/user`)
@@ -15,6 +16,14 @@ const Header = () => {
       });
   }, []);
 
+  const handleMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
   return (
     <AppBar position="static">
       <Toolbar>
@@ -23,11 +32,19 @@ const Header = () => {
         </Typography>
         {user && (
           <Box display="flex" alignItems="center">
-            <Avatar src={user.avatar} alt={user.username} />
+            <Avatar src={user.avatar} alt={user.username} onClick={handleMenuOpen} />
             <Typography variant="body1" style={{ marginLeft: '10px' }}>
               {user.username}
             </Typography>
-            <Button color="inherit" href="/auth/logout" style={{ marginLeft: '20px' }}>Logout</Button>
+            <Menu
+              anchorEl={anchorEl}
+              keepMounted
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+            >
+              <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
+              <MenuItem onClick={() => { window.location.href = '/auth/logout'; }}>Logout</MenuItem>
+            </Menu>
           </Box>
         )}
       </Toolbar>
