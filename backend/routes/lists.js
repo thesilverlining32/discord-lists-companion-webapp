@@ -55,4 +55,26 @@ router.get('/api/lists/:listId/items', (req, res) => {
     ListItem.find({ list: req.params.listId }).then(items => res.json(items)).catch(err => res.status(500).json(err));
 });
 
+// Update list item
+router.put('/:listId/items/:itemId', async (req, res) => {
+    try {
+        const { listId, itemId } = req.params;
+        const updatedItem = await ListItem.findByIdAndUpdate(itemId, req.body, { new: true });
+        res.json(updatedItem);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Delete list item
+router.delete('/:listId/items/:itemId', async (req, res) => {
+    try {
+        const { listId, itemId } = req.params;
+        await ListItem.findByIdAndDelete(itemId);
+        res.json({ message: 'Item deleted' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 module.exports = router;
