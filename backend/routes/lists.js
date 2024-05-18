@@ -56,7 +56,7 @@ router.get('/api/lists/:listId/items', (req, res) => {
 });
 
 // Update list item
-router.put('/:listId/items/:itemId', async (req, res) => {
+router.put('/api/lists/:listId/items/:itemId', async (req, res) => {
     try {
         const { listId, itemId } = req.params;
         const updatedItem = await ListItem.findByIdAndUpdate(itemId, req.body, { new: true });
@@ -67,7 +67,7 @@ router.put('/:listId/items/:itemId', async (req, res) => {
 });
 
 // Delete list item
-router.delete('/:listId/items/:itemId', async (req, res) => {
+router.delete('/api/lists/:listId/items/:itemId', async (req, res) => {
     try {
         const { listId, itemId } = req.params;
         await ListItem.findByIdAndDelete(itemId);
