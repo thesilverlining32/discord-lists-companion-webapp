@@ -1,13 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, TextField, Button, List as MUIList, ListItem as MUIListItem, ListItemText, Card, CardActions, IconButton } from '@mui/material';
+import { Box, TextField, Button, List as MUIList, ListItem as MUIListItem, ListItemText, Card, CardActions, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Snackbar } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+import MuiAlert from '@mui/material/Alert';
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const ListItem = ({ listId }) => {
   const [items, setItems] = useState([]);
   const [itemContent, setItemContent] = useState('');
   const [editItemId, setEditItemId] = useState(null);
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [deleteItemId, setDeleteItemId] = useState(null);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: '' });
 
   useEffect(() => {
     axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items`)
@@ -26,11 +34,13 @@ const ListItem = ({ listId }) => {
       .then(response => {
         if (response.data) {
           setItems([...items, response.data]);
+          setSnackbar({ open: true, message: 'Item added successfully!', severity: 'success' });
         }
         setItemContent('');
       })
       .catch(error => {
         console.error('There was an error adding the item!', error);
+        setSnackbar({ open: true, message: 'Error adding item!', severity: 'error' });
       });
   };
 
@@ -38,10 +48,13 @@ const ListItem = ({ listId }) => {
     axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items/${itemId}`)
       .then(() => {
         setItems(items.filter(item => item._id !== itemId));
+        setSnackbar({ open: true, message: 'Item deleted successfully!', severity: 'success' });
       })
       .catch(error => {
         console.error('There was an error deleting the item!', error);
+        setSnackbar({ open: true, message: 'Error deleting item!', severity: 'error' });
       });
+    handleCloseDeleteDialog();
   };
 
   const handleEditItem = (itemId) => {
@@ -54,12 +67,28 @@ const ListItem = ({ listId }) => {
     axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items/${editItemId}`, { content: itemContent })
       .then(response => {
         setItems(items.map(item => (item._id === editItemId ? response.data : item)));
+        setSnackbar({ open: true, message: 'Item updated successfully!', severity: 'success' });
         setItemContent('');
         setEditItemId(null);
       })
       .catch(error => {
         console.error('There was an error updating the item!', error);
+        setSnackbar({ open: true, message: 'Error updating item!', severity: 'error' });
       });
+  };
+
+  const handleOpenDeleteDialog = (itemId) => {
+    setDeleteItemId(itemId);
+    setOpenDeleteDialog(true);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog(false);
+    setDeleteItemId(null);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
   return (
@@ -83,7 +112,7 @@ const ListItem = ({ listId }) => {
               <IconButton edge="end" aria-label="edit" onClick={() => handleEditItem(item._id)}>
                 <EditIcon />
               </IconButton>
-              <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteItem(item._id)}>
+              <IconButton edge="end" aria-label="delete" onClick={() => handleOpenDeleteDialog(item._id)}>
                 <DeleteIcon />
               </IconButton>
             </>
@@ -92,6 +121,30 @@ const ListItem = ({ listId }) => {
           </MUIListItem>
         ))}
       </MUIList>
+      <Dialog
+        open={openDeleteDialog}
+        onClose={handleCloseDeleteDialog}
+      >
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this item?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={() => handleDeleteItem(deleteItemId)} color="primary">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
