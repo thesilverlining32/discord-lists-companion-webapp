@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Typography, Avatar, Button, Container } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import '../Profile.css'; // Ensure the CSS file is imported
+import './Profile.css';
 
 const Profile = ({ user }) => {
   const navigate = useNavigate();
@@ -20,6 +20,16 @@ const Profile = ({ user }) => {
         <Typography variant="h6" gutterBottom>
           {user.email}
         </Typography>
+        {user.bio && (
+          <Typography variant="body1" gutterBottom>
+            Bio: {user.bio}
+          </Typography>
+        )}
+        {user.location && (
+          <Typography variant="body1" gutterBottom>
+            Location: {user.location}
+          </Typography>
+        )}
         <Button variant="contained" color="primary" onClick={() => navigate('/edit-profile')}>
           Edit Profile
         </Button>

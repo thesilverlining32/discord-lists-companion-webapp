@@ -1,18 +1,22 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Container } from '@mui/material';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import './Profile.css';
 
 const EditProfile = ({ user }) => {
-  const [username, setUsername] = useState(user.username);
-  const [email, setEmail] = useState(user.email);
+  const [bio, setBio] = useState(user.bio || '');
+  const [location, setLocation] = useState(user.location || '');
+  const navigate = useNavigate();
 
   const handleSave = () => {
     axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/users/${user._id}`, {
-      username,
-      email,
+      bio,
+      location,
     })
     .then(response => {
-      // Handle successful profile update
+      console.log('Profile updated successfully', response.data);
+      navigate('/profile');
     })
     .catch(error => {
       console.error('There was an error updating the profile!', error);
@@ -25,16 +29,36 @@ const EditProfile = ({ user }) => {
         <TextField
           label="Username"
           variant="outlined"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          value={user.username}
+          InputProps={{
+            readOnly: true,
+          }}
           fullWidth
           margin="normal"
         />
         <TextField
           label="Email"
           variant="outlined"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={user.email}
+          InputProps={{
+            readOnly: true,
+          }}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Bio"
+          variant="outlined"
+          value={bio}
+          onChange={(e) => setBio(e.target.value)}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Location"
+          variant="outlined"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
           fullWidth
           margin="normal"
         />

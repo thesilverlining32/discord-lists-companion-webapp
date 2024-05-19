@@ -4,7 +4,9 @@ const userSchema = new mongoose.Schema({
     discordId: { type: String, required: true },
     username: { type: String, required: true },
     email: { type: String, required: true },
-    avatar: { type: String, required: true },
+    avatar: { type: String, required: true }, // Ensure avatar is included
+    bio: { type: String }, // Optional field
+    location: { type: String }, // Optional field
     createdAt: { type: Date, default: Date.now }
 });
 

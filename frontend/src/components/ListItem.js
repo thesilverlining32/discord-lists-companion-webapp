@@ -4,7 +4,7 @@ import { Box, TextField, Button, List as MUIList, ListItem as MUIListItem, ListI
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import MuiAlert from '@mui/material/Alert';
-import '../App.css'; // Import the global CSS file
+import './App.css'; // Import the global CSS file
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
