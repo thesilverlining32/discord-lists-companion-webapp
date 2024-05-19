@@ -1,0 +1,79 @@
+/* Styling for list items */
+.MuiListItem-root:hover {
+	background-color: #383c42;
+}
+
+/* Add padding and margin to input fields and buttons */
+.MuiTextField-root,
+.MuiButton-root,
+.MuiFormControl-root {
+	margin-bottom: 16px;
+}
+
+/* Style for the container holding the logo and login message */
+.centered-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100vh;
+	text-align: center;
+}
+
+/* Style for the header logo */
+.header-logo {
+	height: 50px;
+	margin-right: 20px;
+}
+
+/* Style for the header toolbar */
+.header-toolbar {
+	display: flex;
+	align-items: center;
+}
+
+/* Style for the header title */
+.header-title {
+	flex-grow: 1;
+}
+
+/* Style for the user info box */
+.user-info {
+	display: flex;
+	align-items: center;
+}
+
+/* Style for the user avatar */
+.user-avatar {
+	cursor: pointer;
+}
+
+/* Style for the user name */
+.user-name {
+	margin-left: 10px;
+}
+
+/* Style for the card actions */
+.card-actions {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+/* Style for the search and sort box */
+.search-sort-box {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 16px;
+}
+
+/* Style for the list item */
+.list-item {
+	padding: 16px;
+}
+
+/* Style for the list item text */
+.list-item-text {
+	flex-grow: 1;
+}

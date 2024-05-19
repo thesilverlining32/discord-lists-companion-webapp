@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, TextField, Button, List as MUIList, ListItem as MUIListItem, ListItemText, Card, CardActions, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Snackbar, MenuItem, Select, InputLabel, FormControl, CircularProgress } from '@mui/material';
+import { Box, TextField, Button, List as MUIList, ListItem as MUIListItem, ListItemText, CardActions, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Snackbar, MenuItem, Select, InputLabel, FormControl, CircularProgress } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import MuiAlert from '@mui/material/Alert';
+import '../App.css'; // Import the global CSS file
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -119,13 +120,14 @@ const ListItem = ({ listId }) => {
 
   return (
     <Box>
-      <CardActions>
+      <CardActions className="card-actions">
         <TextField
           label="New item"
           variant="outlined"
           value={itemContent}
           onChange={e => setItemContent(e.target.value)}
           fullWidth
+          className="input-field"
         />
         <TextField
           label="Description"
@@ -133,17 +135,19 @@ const ListItem = ({ listId }) => {
           value={itemDescription}
           onChange={e => setItemDescription(e.target.value)}
           fullWidth
+          className="input-field"
         />
-        <Button variant="contained" color="primary" onClick={editItemId ? handleUpdateItem : handleAddItem}>
+        <Button variant="contained" color="primary" onClick={editItemId ? handleUpdateItem : handleAddItem} className="input-field">
           {editItemId ? 'Update Item' : 'Add Item'}
         </Button>
       </CardActions>
-      <Box display="flex" justifyContent="space-between" alignItems="center" my={2}>
+      <Box className="search-sort-box">
         <TextField
           label="Search items"
           variant="outlined"
           value={searchTerm}
           onChange={handleSearchChange}
+          className="search-field"
         />
         <FormControl variant="outlined">
           <InputLabel>Sort</InputLabel>
@@ -162,20 +166,19 @@ const ListItem = ({ listId }) => {
       ) : (
         <MUIList>
           {sortedItems.map(item => (
-            <MUIListItem key={item._id} secondaryAction={
-              <>
-                <IconButton edge="end" aria-label="edit" onClick={() => handleEditItem(item._id)}>
-                  <EditIcon />
-                </IconButton>
-                <IconButton edge="end" aria-label="delete" onClick={() => handleOpenDeleteDialog(item._id)}>
-                  <DeleteIcon />
-                </IconButton>
-              </>
-            }>
-              <ListItemText
-                primary={item.content}
-                secondary={item.description ? item.description : null}
-              />
+            <MUIListItem key={item._id} className="list-item">
+              <Box className="list-item-text">
+                <ListItemText
+                  primary={item.content}
+                  secondary={item.description ? item.description : null}
+                />
+              </Box>
+              <IconButton edge="end" aria-label="edit" onClick={() => handleEditItem(item._id)}>
+                <EditIcon />
+              </IconButton>
+              <IconButton edge="end" aria-label="delete" onClick={() => handleOpenDeleteDialog(item._id)}>
+                <DeleteIcon />
+              </IconButton>
             </MUIListItem>
           ))}
         </MUIList>

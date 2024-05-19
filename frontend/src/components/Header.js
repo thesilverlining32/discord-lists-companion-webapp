@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AppBar, Toolbar, Typography, Avatar, Box, Menu, MenuItem } from '@mui/material';
 import octopusLogo from '../assets/octopus_logo.png';
+import '../App.css'; // Import the global CSS file
 
 const Header = ({ user }) => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -15,15 +16,15 @@ const Header = ({ user }) => {
 
   return (
     <AppBar position="relative" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-      <Toolbar>
-        <img src={octopusLogo} alt="Logo" style={{ height: '50px', marginRight: '20px' }} />
-        <Typography variant="h6" style={{ flexGrow: 1 }}>
+      <Toolbar className="header-toolbar">
+        <img src={octopusLogo} alt="Logo" className="header-logo" />
+        <Typography variant="h6" className="header-title">
           My List App
         </Typography>
         {user && (
-          <Box display="flex" alignItems="center">
-            <Avatar src={user.avatar} alt={user.username} onClick={handleMenuOpen} />
-            <Typography variant="body1" style={{ marginLeft: '10px' }}>
+          <Box className="user-info">
+            <Avatar src={user.avatar} alt={user.username} onClick={handleMenuOpen} className="user-avatar" />
+            <Typography variant="body1" className="user-name">
               {user.username}
             </Typography>
             <Menu

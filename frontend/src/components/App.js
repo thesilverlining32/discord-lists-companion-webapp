@@ -6,6 +6,7 @@ import Header from './Header'; // Import the header
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline, Typography, Container, Box, Button } from '@mui/material';
 import octopusLogo from '../assets/octopus_logo.png'; // Correct import path
+import '../App.css'; // Import the global CSS file
 
 const darkTheme = createTheme({
   palette: {
@@ -79,9 +80,9 @@ const App = () => {
           </Layout>
         </>
       ) : (
-        <Container sx={{ mt: 4 }}>
-          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="100vh">
-            <img src={octopusLogo} alt="Logo" style={{ height: '100px', marginBottom: '20px' }} />
+        <Container className="centered-container">
+          <Box className="centered-content">
+            <img src={octopusLogo} alt="Logo" className="login-logo" />
             <Typography variant="h4" gutterBottom>
               Welcome to My List App
             </Typography>
