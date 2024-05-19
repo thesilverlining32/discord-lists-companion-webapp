@@ -110,3 +110,8 @@
 .main-container {
 	padding: 16px;
 }
+
+.app-bar {
+	background-color: #383c42;
+	z-index: 1300;
+}
