@@ -113,5 +113,32 @@
 
 .app-bar {
 	background-color: #383c42;
-	z-index: 1300;
+	z-index: 1201;
+}
+
+.header {
+	z-index: 1202;
+	/* Ensures it is above the drawer */
+}
+
+.header-toolbar {
+	display: flex;
+	align-items: center;
+}
+
+.header-logo {
+	height: 50px;
+	margin-right: 20px;
+}
+
+.header-title {
+	flex-grow: 1;
+}
+
+.header-avatar {
+	cursor: pointer;
+}
+
+.header-username {
+	margin-left: 10px;
 }

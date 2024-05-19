@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AppBar, Toolbar, Typography, Avatar, Box, Menu, MenuItem } from '@mui/material';
 import octopusLogo from '../assets/octopus_logo.png';
-import '../App.css'; // Import the global CSS file
+import '../App.css'; // Import global CSS
 
 const Header = ({ user }) => {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -14,17 +14,29 @@ const Header = ({ user }) => {
     setAnchorEl(null);
   };
 
+  const getAvatarUrl = (user) => {
+    if (user && user.avatar) {
+      return `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png`;
+    }
+    return null;
+  };
+
   return (
-    <AppBar position="relative" className="app-bar">
+    <AppBar position="relative" className="header">
       <Toolbar className="header-toolbar">
         <img src={octopusLogo} alt="Logo" className="header-logo" />
         <Typography variant="h6" className="header-title">
           My List App
         </Typography>
         {user && (
-          <Box className="user-info">
-            <Avatar src={user.avatar} alt={user.username} onClick={handleMenuOpen} className="user-avatar" />
-            <Typography variant="body1" className="user-name">
+          <Box display="flex" alignItems="center">
+            <Avatar
+              src={getAvatarUrl(user)}
+              alt={user.username}
+              onClick={handleMenuOpen}
+              className="header-avatar"
+            />
+            <Typography variant="body1" className="header-username">
               {user.username}
             </Typography>
             <Menu
