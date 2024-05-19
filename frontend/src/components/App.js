@@ -81,7 +81,7 @@ const App = () => {
         </>
       ) : (
         <Container className="centered-container">
-          <Box className="centered-content">
+          <Box className="centered-container">
             <img src={octopusLogo} alt="Logo" className="login-logo" />
             <Typography variant="h4" gutterBottom>
               Welcome to My List App

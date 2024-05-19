@@ -119,15 +119,15 @@ const ListItem = ({ listId }) => {
   });
 
   return (
-    <Box>
-      <CardActions className="card-actions">
+    <Box className="main-container">
+      <CardActions className="new-item-container">
         <TextField
           label="New item"
           variant="outlined"
           value={itemContent}
           onChange={e => setItemContent(e.target.value)}
           fullWidth
-          className="input-field"
+          className="MuiTextField-root"
         />
         <TextField
           label="Description"
@@ -135,13 +135,18 @@ const ListItem = ({ listId }) => {
           value={itemDescription}
           onChange={e => setItemDescription(e.target.value)}
           fullWidth
-          className="input-field"
+          className="MuiTextField-root"
         />
-        <Button variant="contained" color="primary" onClick={editItemId ? handleUpdateItem : handleAddItem} className="input-field">
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={editItemId ? handleUpdateItem : handleAddItem}
+          className="MuiButton-root"
+        >
           {editItemId ? 'Update Item' : 'Add Item'}
         </Button>
       </CardActions>
-      <Box className="search-sort-box">
+      <Box className="search-sort-fields">
         <TextField
           label="Search items"
           variant="outlined"

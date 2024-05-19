@@ -1,3 +1,5 @@
+/* App.css */
+
 /* Styling for list items */
 .MuiListItem-root:hover {
 	background-color: #383c42;
@@ -18,6 +20,12 @@
 	justify-content: center;
 	height: 100vh;
 	text-align: center;
+}
+
+/* Style for the logo on the login page */
+.login-logo {
+	height: 100px;
+	margin-bottom: 20px;
 }
 
 /* Style for the header logo */
@@ -58,6 +66,7 @@
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
+	margin-bottom: 16px;
 }
 
 /* Style for the search and sort box */
@@ -76,4 +85,28 @@
 /* Style for the list item text */
 .list-item-text {
 	flex-grow: 1;
+}
+
+/* Style for adding a new item */
+.new-item-container {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	margin-bottom: 16px;
+}
+
+/* Style for search and sort fields */
+.search-sort-fields {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 16px;
+}
+
+.search-field {
+	margin-right: 16px;
+}
+
+/* Style for the main container */
+.main-container {
+	padding: 16px;
 }

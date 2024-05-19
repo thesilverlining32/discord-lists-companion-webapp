@@ -15,7 +15,7 @@ const Header = ({ user }) => {
   };
 
   return (
-    <AppBar position="relative" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+    <AppBar position="relative" className="app-bar">
       <Toolbar className="header-toolbar">
         <img src={octopusLogo} alt="Logo" className="header-logo" />
         <Typography variant="h6" className="header-title">
