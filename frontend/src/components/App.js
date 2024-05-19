@@ -9,7 +9,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline, Container, Box, Button } from '@mui/material';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import octopusLogo from '../assets/octopus_logo.png';
-import './App.css';
+import '../App.css';
 
 const darkTheme = createTheme({
   palette: {
