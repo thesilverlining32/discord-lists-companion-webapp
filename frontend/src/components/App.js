@@ -1,12 +1,15 @@
+// App.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import List from './List';
 import Layout from './Layout';
-import Header from './Header'; // Import the header
+import Header from './Header';
+import Profile from './Profile';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { CssBaseline, Typography, Container, Box, Button } from '@mui/material';
-import octopusLogo from '../assets/octopus_logo.png'; // Correct import path
-import '../App.css'; // Import the global CSS file
+import { CssBaseline, Container, Box, Button } from '@mui/material';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import octopusLogo from '../assets/octopus_logo.png';
+import './App.css';
 
 const darkTheme = createTheme({
   palette: {
@@ -66,35 +69,44 @@ const App = () => {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      {user ? (
-        <>
-          <Header user={user} />
-          <Layout
-            lists={lists}
-            onSelectList={handleSelectList}
-            selectedListId={selectedListId}
-            handleLogout={handleLogout}
-            user={user}
-          >
-            <List selectedListId={selectedListId} />
-          </Layout>
-        </>
-      ) : (
-        <Container className="centered-container">
-          <Box className="centered-container">
-            <img src={octopusLogo} alt="Logo" className="login-logo" />
-            <Typography variant="h4" gutterBottom>
-              Welcome to My List App
-            </Typography>
-            <Typography variant="h6" gutterBottom>
-              Please log in to manage your lists.
-            </Typography>
-            <Button variant="contained" color="primary" href={`${process.env.REACT_APP_BACKEND_URL}/auth/discord`}>
-              Login with Discord
-            </Button>
-          </Box>
-        </Container>
-      )}
+      <Router>
+        {user ? (
+          <>
+            <Header user={user} />
+            <Switch>
+              <Route path="/profile">
+                <Profile user={user} />
+              </Route>
+              <Route path="/">
+                <Layout
+                  lists={lists}
+                  onSelectList={handleSelectList}
+                  selectedListId={selectedListId}
+                  handleLogout={handleLogout}
+                  user={user}
+                >
+                  <List selectedListId={selectedListId} />
+                </Layout>
+              </Route>
+            </Switch>
+          </>
+        ) : (
+          <Container sx={{ mt: 4 }}>
+            <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="100vh">
+              <img src={octopusLogo} alt="Logo" className="login-logo" />
+              <Typography variant="h4" gutterBottom>
+                Welcome to My List App
+              </Typography>
+              <Typography variant="h6" gutterBottom>
+                Please log in to manage your lists.
+              </Typography>
+              <Button variant="contained" color="primary" href={`${process.env.REACT_APP_BACKEND_URL}/auth/discord`}>
+                Login with Discord
+              </Button>
+            </Box>
+          </Container>
+        )}
+      </Router>
     </ThemeProvider>
   );
 };
