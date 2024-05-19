@@ -1,15 +1,14 @@
-// App.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import List from './List';
 import Layout from './Layout';
-import Header from './Header';
-import Profile from './Profile';
+import Header from './Header'; // Import the header
+import Profile from './Profile'; // Import the Profile component
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { CssBaseline, Container, Box, Button } from '@mui/material';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import octopusLogo from '../assets/octopus_logo.png';
-import '../App.css';
+import { CssBaseline, Typography, Container, Box, Button } from '@mui/material';
+import octopusLogo from '../assets/octopus_logo.png'; // Correct import path
+import '../App.css'; // Ensure this is the correct path to your CSS file
 
 const darkTheme = createTheme({
   palette: {
@@ -73,11 +72,8 @@ const App = () => {
         {user ? (
           <>
             <Header user={user} />
-            <Switch>
-              <Route path="/profile">
-                <Profile user={user} />
-              </Route>
-              <Route path="/">
+            <Routes>
+              <Route path="/" element={
                 <Layout
                   lists={lists}
                   onSelectList={handleSelectList}
@@ -87,8 +83,9 @@ const App = () => {
                 >
                   <List selectedListId={selectedListId} />
                 </Layout>
-              </Route>
-            </Switch>
+              } />
+              <Route path="/profile" element={<Profile user={user} />} />
+            </Routes>
           </>
         ) : (
           <Container sx={{ mt: 4 }}>
