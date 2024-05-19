@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import List from './List';
 import Layout from './Layout';
 import Header from './Header'; // Import the header
@@ -9,7 +9,7 @@ import EditProfile from './EditProfile';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline, Typography, Container, Box, Button } from '@mui/material';
 import octopusLogo from '../assets/octopus_logo.png'; // Correct import path
-import '../App.css'; // Ensure this is the correct path to your CSS file
+import './App.css'; // Ensure this is the correct path to your CSS file
 
 const darkTheme = createTheme({
   palette: {
@@ -65,6 +65,7 @@ const App = () => {
 
   const handleSelectList = (listId) => {
     setSelectedListId(listId);
+    navigate('/');
   };
 
   return (
