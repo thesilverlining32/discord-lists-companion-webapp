@@ -30,4 +30,16 @@ router.get('/auth/status', (req, res) => {
     }
 });
 
+router.get('/auth/user', (req, res) => {
+    if (req.isAuthenticated()) {
+        res.json({
+            id: req.user.id,
+            username: req.user.username,
+            avatar: `https://cdn.discordapp.com/avatars/${req.user.id}/${req.user.avatar}.png`,
+        });
+    } else {
+        res.status(401).json({ error: 'Unauthorized' });
+    }
+});
+
 module.exports = router;
