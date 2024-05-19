@@ -5,6 +5,7 @@ import List from './List';
 import Layout from './Layout';
 import Header from './Header'; // Import the header
 import Profile from './Profile'; // Import the Profile component
+import EditProfile from './EditProfile';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline, Typography, Container, Box, Button } from '@mui/material';
 import octopusLogo from '../assets/octopus_logo.png'; // Correct import path
@@ -34,6 +35,7 @@ const App = () => {
   useEffect(() => {
     axios.get(`${process.env.REACT_APP_BACKEND_URL}/auth/status`)
       .then(response => {
+        console.log(response.data.user); // Check the user object
         setUser(response.data.user);
         if (response.data.user) {
           axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/lists`)
@@ -72,20 +74,19 @@ const App = () => {
         {user ? (
           <>
             <Header user={user} />
-            <Routes>
-              <Route path="/" element={
-                <Layout
-                  lists={lists}
-                  onSelectList={handleSelectList}
-                  selectedListId={selectedListId}
-                  handleLogout={handleLogout}
-                  user={user}
-                >
-                  <List selectedListId={selectedListId} />
-                </Layout>
-              } />
-              <Route path="/profile" element={<Profile user={user} />} />
-            </Routes>
+            <Layout
+              lists={lists}
+              onSelectList={handleSelectList}
+              selectedListId={selectedListId}
+              handleLogout={handleLogout}
+              user={user}
+            >
+              <Routes>
+                <Route path="/" element={<List selectedListId={selectedListId} />} />
+                <Route path="/profile" element={<Profile user={user} />} />
+                <Route path="/edit-profile" element={<EditProfile user={user} />} />
+              </Routes>
+            </Layout>
           </>
         ) : (
           <Container sx={{ mt: 4 }}>

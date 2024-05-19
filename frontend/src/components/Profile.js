@@ -1,18 +1,26 @@
 import React from 'react';
-import { Container, Typography, Avatar, Box, Button } from '@mui/material';
+import { Box, Typography, Avatar, Button, Container } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import '../Profile.css'; // Ensure the CSS file is imported
 
 const Profile = ({ user }) => {
+  const navigate = useNavigate();
+
   return (
-    <Container>
-      <Box display="flex" flexDirection="column" alignItems="center" my={4}>
-        <Avatar src={user.avatar} alt={user.username} sx={{ width: 100, height: 100 }} />
+    <Container className="profile-container">
+      <Box className="profile-content" display="flex" flexDirection="column" alignItems="center" justifyContent="center">
+        <Avatar
+          src={`https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png`}
+          alt={user.username}
+          className="profile-avatar"
+        />
         <Typography variant="h4" gutterBottom>
           {user.username}
         </Typography>
-        <Typography variant="body1" gutterBottom>
+        <Typography variant="h6" gutterBottom>
           {user.email}
         </Typography>
-        <Button variant="contained" color="primary" href="/edit-profile">
+        <Button variant="contained" color="primary" onClick={() => navigate('/edit-profile')}>
           Edit Profile
         </Button>
       </Box>
