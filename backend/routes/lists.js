@@ -11,27 +11,25 @@ const isAuthenticated = (req, res, next) => {
     res.status(401).json({ error: 'Unauthorized' });
 };
 
+// Create a new list
 router.post('/api/lists', isAuthenticated, (req, res) => {
-    console.log('Request to create list:', req.body);
     const newList = new List({
         name: req.body.name,
         createdBy: req.user._id,
     });
     newList.save()
-        .then(list => {
-            console.log('List created:', list);
-            res.json(list);
-        })
-        .catch(err => {
-            console.error('Error creating list:', err);
-            res.status(500).json(err);
-        });
+        .then(list => res.json(list))
+        .catch(err => res.status(500).json(err));
 });
 
-router.get('/api/lists', (req, res) => {
-    List.find().populate('items').then(lists => res.json(lists)).catch(err => res.status(500).json(err));
+// Get all lists
+router.get('/api/lists', isAuthenticated, (req, res) => {
+    List.find({ createdBy: req.user._id }).populate('items')
+        .then(lists => res.json(lists))
+        .catch(err => res.status(500).json(err));
 });
 
+// Create a new list item
 router.post('/api/lists/:listId/items', isAuthenticated, (req, res) => {
     const newItem = new ListItem({
         content: req.body.content,
@@ -48,12 +46,8 @@ router.post('/api/lists/:listId/items', isAuthenticated, (req, res) => {
         }).catch(err => res.status(500).json(err));
 });
 
-router.get('/api/lists/:listId/items', (req, res) => {
-    ListItem.find({ list: req.params.listId }).then(items => res.json(items)).catch(err => res.status(500).json(err));
-});
-
 // Update list item
-router.put('/api/lists/:listId/items/:itemId', async (req, res) => {
+router.put('/api/lists/:listId/items/:itemId', isAuthenticated, async (req, res) => {
     try {
         const { listId, itemId } = req.params;
         const updatedItem = await ListItem.findByIdAndUpdate(itemId, req.body, { new: true });
@@ -64,7 +58,7 @@ router.put('/api/lists/:listId/items/:itemId', async (req, res) => {
 });
 
 // Delete list item
-router.delete('/api/lists/:listId/items/:itemId', async (req, res) => {
+router.delete('/api/lists/:listId/items/:itemId', isAuthenticated, async (req, res) => {
     try {
         const { listId, itemId } = req.params;
         await ListItem.findByIdAndDelete(itemId);

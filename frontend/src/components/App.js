@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom'; // Import useNavigate
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import List from './List';
 import Layout from './Layout';
 import Header from './Header'; // Import the header

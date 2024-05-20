@@ -7,6 +7,7 @@ const path = require('path');
 const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const listRoutes = require('./routes/lists');
+const userRoutes = require('./routes/user'); // Import user routes
 require('./config/passport');
 
 const app = express();
@@ -44,6 +45,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Register API routes before the catch-all route
 app.use(authRoutes);
 app.use(listRoutes);
+app.use(userRoutes); // Use user routes
 
 // Add a catch-all route for serving the frontend
 app.get('*', (req, res) => {
