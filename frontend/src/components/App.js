@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import List from './List';
 import Layout from './Layout';
-import Header from './Header'; // Import the header
-import Profile from './Profile'; // Import the Profile component
+import Header from './Header';
+import Profile from './Profile';
 import EditProfile from './EditProfile';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline, Typography, Container, Box, Button } from '@mui/material';
-import octopusLogo from '../assets/octopus_logo.png'; // Correct import path
-import './App.css'; // Ensure this is the correct path to your CSS file
+import octopusLogo from '../assets/octopus_logo.png';
+import './App.css';
 
 const darkTheme = createTheme({
   palette: {
@@ -31,12 +31,11 @@ const App = () => {
   const [user, setUser] = useState(null);
   const [lists, setLists] = useState([]);
   const [selectedListId, setSelectedListId] = useState(null);
-  const navigate = useNavigate(); // Use useNavigate to define navigate
 
   useEffect(() => {
     axios.get(`${process.env.REACT_APP_BACKEND_URL}/auth/status`)
       .then(response => {
-        console.log(response.data.user); // Check the user object
+        console.log(response.data.user);
         setUser(response.data.user);
         if (response.data.user) {
           axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/lists`)
@@ -58,7 +57,6 @@ const App = () => {
       .then(() => {
         setUser(null);
         setLists([]);
-        navigate('/'); // Navigate to the home page on logout
       })
       .catch(error => {
         console.error('Error logging out:', error);
