@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom'; // Import useNavigate
 import List from './List';
 import Layout from './Layout';
 import Header from './Header'; // Import the header
@@ -31,6 +31,7 @@ const App = () => {
   const [user, setUser] = useState(null);
   const [lists, setLists] = useState([]);
   const [selectedListId, setSelectedListId] = useState(null);
+  const navigate = useNavigate(); // Use useNavigate to define navigate
 
   useEffect(() => {
     axios.get(`${process.env.REACT_APP_BACKEND_URL}/auth/status`)
@@ -57,6 +58,7 @@ const App = () => {
       .then(() => {
         setUser(null);
         setLists([]);
+        navigate('/'); // Navigate to the home page on logout
       })
       .catch(error => {
         console.error('Error logging out:', error);
@@ -65,7 +67,6 @@ const App = () => {
 
   const handleSelectList = (listId) => {
     setSelectedListId(listId);
-    navigate('/');
   };
 
   return (
