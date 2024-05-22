@@ -95,6 +95,12 @@
 	margin-bottom: 16px;
 }
 
+.new-item-input,
+.new-item-description,
+.add-item-button {
+  margin-bottom: 16px;
+}
+
 /* Style for search and sort fields */
 .search-sort-fields {
 	display: flex;

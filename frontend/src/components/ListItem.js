@@ -89,14 +89,14 @@ const ListItem = ({ listId }) => {
 
   return (
     <Box>
-      <Box mb={2}>
+      <Box mb={2} className="new-item-container">
         <TextField
           label="New item"
           variant="outlined"
           value={itemContent}
           onChange={(e) => setItemContent(e.target.value)}
           fullWidth
-          margin="normal"
+          className="new-item-input"
         />
         <TextField
           label="Description"
@@ -104,21 +104,21 @@ const ListItem = ({ listId }) => {
           value={itemDescription}
           onChange={(e) => setItemDescription(e.target.value)}
           fullWidth
-          margin="normal"
+          className="new-item-description"
         />
-        <Button variant="contained" color="primary" onClick={editItemId ? handleUpdateItem : handleAddItem} fullWidth>
+        <Button variant="contained" color="primary" onClick={editItemId ? handleUpdateItem : handleAddItem} fullWidth className="add-item-button">
           {editItemId ? 'Update Item' : 'Add Item'}
         </Button>
       </Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} className="search-sort-box">
         <TextField
           label="Search items"
           variant="outlined"
           value={searchTerm}
           onChange={handleSearchChange}
-          margin="normal"
+          className="search-field"
         />
-        <FormControl variant="outlined" margin="normal">
+        <FormControl variant="outlined" className="sort-field">
           <InputLabel>Sort</InputLabel>
           <Select
             value={sortOrder}
@@ -135,10 +135,11 @@ const ListItem = ({ listId }) => {
       ) : (
         <MUIList>
           {sortedItems.map(item => (
-            <MUIListItem key={item._id}>
+            <MUIListItem key={item._id} className="list-item">
               <ListItemText
                 primary={item.content}
                 secondary={item.description}
+                className="list-item-text"
               />
               <IconButton edge="end" aria-label="edit" onClick={() => handleEditItem(item._id)}>
                 <EditIcon />
