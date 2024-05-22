@@ -1,33 +1,47 @@
 import React from 'react';
-import { Box, Drawer, CssBaseline, AppBar, Toolbar, Typography, List, ListItem, ListItemText } from '@mui/material';
+import { Box, TextField, Button, List, ListItem, ListItemText } from '@mui/material';
 
-const drawerWidth = 240;
+const Layout = ({ lists, onSelectList, selectedListId, children }) => {
+  const [newListName, setNewListName] = useState('');
 
-const Layout = ({ children, lists, onSelectList, selectedListId }) => {
+  const handleAddList = () => {
+    axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/lists`, { name: newListName })
+      .then(response => {
+        setLists([...lists, response.data]);
+        setNewListName('');
+      })
+      .catch(error => {
+        console.error('There was an error creating the list!', error);
+      });
+  };
+
   return (
-    <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
-        }}
-      >
-        <Toolbar />
-        <Box sx={{ overflow: 'auto' }}>
-          <List>
-            {lists.map((list) => (
-              <ListItem button key={list._id} onClick={() => onSelectList(list._id)} selected={list._id === selectedListId}>
-                <ListItemText primary={list.name} />
-              </ListItem>
-            ))}
-          </List>
-        </Box>
-      </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, bgcolor: 'background.default', p: 3 }}>
-        <Toolbar />
+    <Box display="flex">
+      <Box width="250px" p={2} bgcolor="background.paper">
+        <TextField
+          label="New list name"
+          variant="outlined"
+          value={newListName}
+          onChange={(e) => setNewListName(e.target.value)}
+          fullWidth
+        />
+        <Button variant="contained" color="primary" onClick={handleAddList} fullWidth>
+          Add List
+        </Button>
+        <List>
+          {lists.map((list) => (
+            <ListItem
+              key={list._id}
+              button
+              selected={list._id === selectedListId}
+              onClick={() => onSelectList(list._id)}
+            >
+              <ListItemText primary={list.name} />
+            </ListItem>
+          ))}
+        </List>
+      </Box>
+      <Box flexGrow={1} p={2}>
         {children}
       </Box>
     </Box>

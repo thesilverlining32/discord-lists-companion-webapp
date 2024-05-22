@@ -1,14 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Box, TextField, Button, List as MUIList, ListItem as MUIListItem, ListItemText, CardActions, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Snackbar, MenuItem, Select, InputLabel, FormControl, CircularProgress } from '@mui/material';
+import { Box, TextField, Button, CircularProgress, List as MUIList, ListItem as MUIListItem, ListItemText, IconButton, FormControl, InputLabel, Select, MenuItem, Snackbar, Alert } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import MuiAlert from '@mui/material/Alert';
-import './App.css'; // Import the global CSS file
-
-const Alert = React.forwardRef(function Alert(props, ref) {
-  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
-});
 
 const ListItem = ({ listId }) => {
   const [items, setItems] = useState([]);
@@ -23,32 +17,45 @@ const ListItem = ({ listId }) => {
   const [sortOrder, setSortOrder] = useState('asc');
 
   useEffect(() => {
-    axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items`)
-      .then(response => {
-        if (Array.isArray(response.data)) {
+    if (listId) {
+      axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items`)
+        .then(response => {
           setItems(response.data);
-        }
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error('There was an error fetching the items!', error);
-        setLoading(false);
-      });
+          setLoading(false);
+        })
+        .catch(error => {
+          console.error('There was an error fetching the items!', error);
+          setLoading(false);
+        });
+    }
   }, [listId]);
 
   const handleAddItem = () => {
     axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items`, { content: itemContent, description: itemDescription })
       .then(response => {
-        if (response.data) {
-          setItems([...items, response.data]);
-          setSnackbar({ open: true, message: 'Item added successfully!', severity: 'success' });
-        }
+        setItems([...items, response.data]);
         setItemContent('');
         setItemDescription('');
+        setSnackbar({ open: true, message: 'Item added successfully!', severity: 'success' });
       })
       .catch(error => {
         console.error('There was an error adding the item!', error);
         setSnackbar({ open: true, message: 'Error adding item!', severity: 'error' });
+      });
+  };
+
+  const handleUpdateItem = () => {
+    axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items/${editItemId}`, { content: itemContent, description: itemDescription })
+      .then(response => {
+        setItems(items.map(item => (item._id === editItemId ? response.data : item)));
+        setItemContent('');
+        setItemDescription('');
+        setEditItemId(null);
+        setSnackbar({ open: true, message: 'Item updated successfully!', severity: 'success' });
+      })
+      .catch(error => {
+        console.error('There was an error updating the item!', error);
+        setSnackbar({ open: true, message: 'Error updating item!', severity: 'error' });
       });
   };
 
@@ -62,43 +69,13 @@ const ListItem = ({ listId }) => {
         console.error('There was an error deleting the item!', error);
         setSnackbar({ open: true, message: 'Error deleting item!', severity: 'error' });
       });
-    handleCloseDeleteDialog();
   };
 
   const handleEditItem = (itemId) => {
-    setEditItemId(itemId);
     const item = items.find(item => item._id === itemId);
     setItemContent(item.content);
     setItemDescription(item.description);
-  };
-
-  const handleUpdateItem = () => {
-    axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items/${editItemId}`, { content: itemContent, description: itemDescription })
-      .then(response => {
-        setItems(items.map(item => (item._id === editItemId ? response.data : item)));
-        setSnackbar({ open: true, message: 'Item updated successfully!', severity: 'success' });
-        setItemContent('');
-        setItemDescription('');
-        setEditItemId(null);
-      })
-      .catch(error => {
-        console.error('There was an error updating the item!', error);
-        setSnackbar({ open: true, message: 'Error updating item!', severity: 'error' });
-      });
-  };
-
-  const handleOpenDeleteDialog = (itemId) => {
-    setDeleteItemId(itemId);
-    setOpenDeleteDialog(true);
-  };
-
-  const handleCloseDeleteDialog = () => {
-    setOpenDeleteDialog(false);
-    setDeleteItemId(null);
-  };
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
+    setEditItemId(itemId);
   };
 
   const handleSearchChange = (event) => {
@@ -110,51 +87,40 @@ const ListItem = ({ listId }) => {
   };
 
   const filteredItems = items.filter(item => item.content.toLowerCase().includes(searchTerm.toLowerCase()));
-  const sortedItems = filteredItems.sort((a, b) => {
-    if (sortOrder === 'asc') {
-      return a.content.localeCompare(b.content);
-    } else {
-      return b.content.localeCompare(a.content);
-    }
-  });
+  const sortedItems = filteredItems.sort((a, b) => (sortOrder === 'asc' ? a.content.localeCompare(b.content) : b.content.localeCompare(a.content)));
 
   return (
-    <Box className="main-container">
-      <CardActions className="new-item-container">
+    <Box>
+      <Box mb={2}>
         <TextField
           label="New item"
           variant="outlined"
           value={itemContent}
-          onChange={e => setItemContent(e.target.value)}
+          onChange={(e) => setItemContent(e.target.value)}
           fullWidth
-          className="MuiTextField-root"
+          margin="normal"
         />
         <TextField
           label="Description"
           variant="outlined"
           value={itemDescription}
-          onChange={e => setItemDescription(e.target.value)}
+          onChange={(e) => setItemDescription(e.target.value)}
           fullWidth
-          className="MuiTextField-root"
+          margin="normal"
         />
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={editItemId ? handleUpdateItem : handleAddItem}
-          className="MuiButton-root"
-        >
+        <Button variant="contained" color="primary" onClick={editItemId ? handleUpdateItem : handleAddItem} fullWidth>
           {editItemId ? 'Update Item' : 'Add Item'}
         </Button>
-      </CardActions>
-      <Box className="search-sort-fields">
+      </Box>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <TextField
           label="Search items"
           variant="outlined"
           value={searchTerm}
           onChange={handleSearchChange}
-          className="search-field"
+          margin="normal"
         />
-        <FormControl variant="outlined">
+        <FormControl variant="outlined" margin="normal">
           <InputLabel>Sort</InputLabel>
           <Select
             value={sortOrder}
@@ -171,44 +137,23 @@ const ListItem = ({ listId }) => {
       ) : (
         <MUIList>
           {sortedItems.map(item => (
-            <MUIListItem key={item._id} className="list-item">
-              <Box className="list-item-text">
-                <ListItemText
-                  primary={item.content}
-                  secondary={item.description ? item.description : null}
-                />
-              </Box>
+            <MUIListItem key={item._id}>
+              <ListItemText
+                primary={item.content}
+                secondary={item.description}
+              />
               <IconButton edge="end" aria-label="edit" onClick={() => handleEditItem(item._id)}>
                 <EditIcon />
               </IconButton>
-              <IconButton edge="end" aria-label="delete" onClick={() => handleOpenDeleteDialog(item._id)}>
+              <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteItem(item._id)}>
                 <DeleteIcon />
               </IconButton>
             </MUIListItem>
           ))}
         </MUIList>
       )}
-      <Dialog
-        open={openDeleteDialog}
-        onClose={handleCloseDeleteDialog}
-      >
-        <DialogTitle>Confirm Delete</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete this item?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={() => handleDeleteItem(deleteItemId)} color="primary">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
+      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity}>
           {snackbar.message}
         </Alert>
       </Snackbar>
