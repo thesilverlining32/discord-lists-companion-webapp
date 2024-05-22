@@ -16,17 +16,21 @@ const ListItem = ({ listId }) => {
 
   useEffect(() => {
     if (listId) {
-      axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items`)
-        .then(response => {
-          setItems(response.data);
-          setLoading(false);
-        })
-        .catch(error => {
-          console.error('There was an error fetching the items!', error);
-          setLoading(false);
-        });
+      fetchItems(listId);
     }
   }, [listId]);
+
+  const fetchItems = (listId) => {
+    axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items`)
+      .then(response => {
+        setItems(response.data);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('There was an error fetching the items!', error);
+        setLoading(false);
+      });
+  };
 
   const handleAddItem = () => {
     axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items`, { content: itemContent, description: itemDescription })
