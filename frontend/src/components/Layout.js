@@ -3,7 +3,7 @@ import { Box, TextField, Button, List, ListItem, ListItemText } from '@mui/mater
 import axios from 'axios';
 import ListItemComponent from './ListItem';  // Import the ListItem component
 
-const Layout = ({ lists, onSelectList, selectedListId, children }) => {
+const Layout = ({ lists, onSelectList, selectedListId, setLists, children }) => {  // Add setLists prop
   const [newListName, setNewListName] = useState('');
 
   const handleAddList = () => {
@@ -26,8 +26,9 @@ const Layout = ({ lists, onSelectList, selectedListId, children }) => {
           value={newListName}
           onChange={(e) => setNewListName(e.target.value)}
           fullWidth
+          className="new-list-name-input"
         />
-        <Button variant="contained" color="primary" onClick={handleAddList} fullWidth>
+        <Button variant="contained" color="primary" onClick={handleAddList} fullWidth className="add-list-button">
           Add List
         </Button>
         <List>

@@ -77,6 +77,7 @@ const App = () => {
               lists={lists}
               onSelectList={handleSelectList}
               selectedListId={selectedListId}
+              setLists={setLists}  // Pass setLists prop
               handleLogout={handleLogout}
               user={user}
             >
