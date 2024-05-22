@@ -35,7 +35,6 @@ const App = () => {
   useEffect(() => {
     axios.get(`${process.env.REACT_APP_BACKEND_URL}/auth/status`)
       .then(response => {
-        console.log(response.data.user);
         setUser(response.data.user);
         if (response.data.user) {
           axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/lists`)
@@ -78,8 +77,7 @@ const App = () => {
               lists={lists}
               onSelectList={handleSelectList}
               selectedListId={selectedListId}
-              handleLogout={handleLogout}
-              user={user}
+              setLists={setLists}
             >
               <Routes>
                 <Route path="/" element={<List selectedListId={selectedListId} />} />

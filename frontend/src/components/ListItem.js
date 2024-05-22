@@ -10,8 +10,6 @@ const ListItem = ({ listId }) => {
   const [itemContent, setItemContent] = useState('');
   const [itemDescription, setItemDescription] = useState('');
   const [editItemId, setEditItemId] = useState(null);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [deleteItemId, setDeleteItemId] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: '' });
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState('asc');

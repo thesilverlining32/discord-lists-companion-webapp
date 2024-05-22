@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Box, TextField, Button, List, ListItem, ListItemText } from '@mui/material';
 
-const Layout = ({ lists, onSelectList, selectedListId, children }) => {
+const Layout = ({ lists, onSelectList, selectedListId, setLists, children }) => {
   const [newListName, setNewListName] = useState('');
 
   const handleAddList = () => {
