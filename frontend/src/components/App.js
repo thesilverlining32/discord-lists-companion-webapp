@@ -77,7 +77,8 @@ const App = () => {
               lists={lists}
               onSelectList={handleSelectList}
               selectedListId={selectedListId}
-              setLists={setLists}
+              handleLogout={handleLogout}
+              user={user}
             >
               <Routes>
                 <Route path="/" element={<List selectedListId={selectedListId} />} />

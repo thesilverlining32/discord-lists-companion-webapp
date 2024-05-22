@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
 import { Box, TextField, Button, List, ListItem, ListItemText } from '@mui/material';
+import axios from 'axios';
+import ListItemComponent from './ListItem';  // Import the ListItem component
 
-const Layout = ({ lists, onSelectList, selectedListId, setLists, children }) => {
+const Layout = ({ lists, onSelectList, selectedListId, children }) => {
   const [newListName, setNewListName] = useState('');
 
   const handleAddList = () => {
@@ -43,6 +44,7 @@ const Layout = ({ lists, onSelectList, selectedListId, setLists, children }) => 
         </List>
       </Box>
       <Box flexGrow={1} p={2}>
+        {selectedListId && <ListItemComponent listId={selectedListId} />}
         {children}
       </Box>
     </Box>
