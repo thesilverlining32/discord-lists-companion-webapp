@@ -21,14 +21,15 @@ const ListItem = ({ listId }) => {
   }, [listId]);
 
   const fetchItems = (listId) => {
+    setLoading(true); // Start loading before fetching items
     axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items`)
       .then(response => {
         setItems(response.data);
-        setLoading(false);
+        setLoading(false); // Stop loading after fetching items
       })
       .catch(error => {
         console.error('There was an error fetching the items!', error);
-        setLoading(false);
+        setLoading(false); // Stop loading if there's an error
       });
   };
 
