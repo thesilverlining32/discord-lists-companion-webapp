@@ -29,6 +29,11 @@ router.get('/api/lists', isAuthenticated, (req, res) => {
         .catch(err => res.status(500).json(err));
 });
 
+//Get a list items
+router.get('/api/lists/:listId/items', isAuthenticated, (req, res) => {
+    ListItem.find({ list: req.params.listId }).then(items => res.json(items)).catch(err => res.status(500).json(err));
+});
+
 // Create a new list item
 router.post('/api/lists/:listId/items', isAuthenticated, (req, res) => {
     const newItem = new ListItem({

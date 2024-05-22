@@ -1,66 +1,50 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import ListItem from './ListItem';
-import { Box, TextField, Button, Typography, Card, CardContent } from '@mui/material';
+import { Box, Typography, CircularProgress, List as MUIList, ListItem as MUIListItem, ListItemText, IconButton } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const List = ({ selectedListId }) => {
-  const [lists, setLists] = useState([]);
-  const [listName, setListName] = useState('');
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/lists`)
-      .then(response => {
-        if (Array.isArray(response.data)) {
-          setLists(response.data);
-        }
-      })
-      .catch(error => {
-        console.error('There was an error fetching the lists!', error);
-      });
-  }, []);
+    if (selectedListId) {
+      axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${selectedListId}/items`)
+        .then(response => {
+          setItems(response.data);
+          setLoading(false);
+        })
+        .catch(error => {
+          console.error('There was an error fetching the items!', error);
+          setLoading(false);
+        });
+    }
+  }, [selectedListId]);
 
-  const handleAddList = () => {
-    axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/lists`, { name: listName })
-      .then(response => {
-        if (response.data) {
-          setLists([...lists, response.data]);
-        }
-        setListName('');
-      })
-      .catch(error => {
-        console.error('There was an error creating the list!', error);
-      });
-  };
+  if (loading) {
+    return <CircularProgress />;
+  }
 
-  const selectedList = lists.find(list => list._id === selectedListId);
+  if (!selectedListId) {
+    return <Typography>Select a list to view items.</Typography>;
+  }
 
   return (
-    <Box sx={{ p: 2 }}>
-      <Typography variant="h4" gutterBottom>Lists</Typography>
-      <Box sx={{ display: 'flex', gap: 2, mb: 4 }}>
-        <TextField
-          label="New list name"
-          variant="outlined"
-          value={listName}
-          onChange={e => setListName(e.target.value)}
-          fullWidth
-        />
-        <Button variant="contained" color="primary" onClick={handleAddList}>Add List</Button>
-      </Box>
-      {selectedList ? (
-        <Card sx={{ mb: 2 }}>
-          <CardContent>
-            <Typography variant="h5" component="div">
-              {selectedList.name}
-            </Typography>
-            <ListItem listId={selectedList._id} />
-          </CardContent>
-        </Card>
-      ) : (
-        <Typography variant="h6" color="textSecondary">
-          Select a list to view items
-        </Typography>
-      )}
+    <Box>
+      <MUIList>
+        {items.map(item => (
+          <MUIListItem key={item._id}>
+            <ListItemText primary={item.content} secondary={item.description} />
+            <IconButton edge="end" aria-label="edit">
+              <EditIcon />
+            </IconButton>
+            <IconButton edge="end" aria-label="delete">
+              <DeleteIcon />
+            </IconButton>
+          </MUIListItem>
+        ))}
+      </MUIList>
     </Box>
   );
 };
