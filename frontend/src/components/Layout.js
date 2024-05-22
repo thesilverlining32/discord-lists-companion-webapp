@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, List, ListItem, ListItemText } from '@mui/material';
+import { Box, TextField, Button, List, ListItem, ListItemText, IconButton } from '@mui/material';
 import axios from 'axios';
-import ListItemComponent from './ListItem';  // Import the ListItem component
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import ListItemComponent from './ListItem';
 
-const Layout = ({ lists, onSelectList, selectedListId, setLists, children }) => {  // Add setLists prop
+const Layout = ({ lists, onSelectList, selectedListId, setLists, children }) => {
   const [newListName, setNewListName] = useState('');
+  const [editingListId, setEditingListId] = useState(null);
+  const [editingListName, setEditingListName] = useState('');
 
   const handleAddList = () => {
     axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/lists`, { name: newListName })
@@ -14,6 +18,34 @@ const Layout = ({ lists, onSelectList, selectedListId, setLists, children }) => 
       })
       .catch(error => {
         console.error('There was an error creating the list!', error);
+      });
+  };
+
+  const handleEditList = (listId, listName) => {
+    setEditingListId(listId);
+    setEditingListName(listName);
+  };
+
+  const handleUpdateList = () => {
+    axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${editingListId}`, { name: editingListName })
+      .then(response => {
+        const updatedLists = lists.map(list => list._id === editingListId ? response.data : list);
+        setLists(updatedLists);
+        setEditingListId(null);
+        setEditingListName('');
+      })
+      .catch(error => {
+        console.error('There was an error updating the list!', error);
+      });
+  };
+
+  const handleDeleteList = (listId) => {
+    axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}`)
+      .then(response => {
+        setLists(lists.filter(list => list._id !== listId));
+      })
+      .catch(error => {
+        console.error('There was an error deleting the list!', error);
       });
   };
 
@@ -38,11 +70,36 @@ const Layout = ({ lists, onSelectList, selectedListId, setLists, children }) => 
               button
               selected={list._id === selectedListId}
               onClick={() => onSelectList(list._id)}
+              className="list-item"
             >
               <ListItemText primary={list.name} />
+              {list.items.length === 0 && (
+                <>
+                  <IconButton edge="end" aria-label="edit" onClick={() => handleEditList(list._id, list.name)}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteList(list._id)}>
+                    <DeleteIcon />
+                  </IconButton>
+                </>
+              )}
             </ListItem>
           ))}
         </List>
+        {editingListId && (
+          <Box mt={2}>
+            <TextField
+              label="Edit list name"
+              variant="outlined"
+              value={editingListName}
+              onChange={(e) => setEditingListName(e.target.value)}
+              fullWidth
+            />
+            <Button variant="contained" color="primary" onClick={handleUpdateList} fullWidth>
+              Update List
+            </Button>
+          </Box>
+        )}
       </Box>
       <Box flexGrow={1} p={2}>
         {selectedListId && <ListItemComponent listId={selectedListId} />}
