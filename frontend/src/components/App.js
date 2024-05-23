@@ -40,6 +40,9 @@ const App = () => {
           axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/lists`)
             .then(res => {
               setLists(res.data);
+              if (res.data.length > 0) {
+                setSelectedListId(res.data[0]._id);
+              }
             })
             .catch(err => {
               console.error('Error fetching lists:', err);
@@ -72,21 +75,22 @@ const App = () => {
       <Router>
         {user ? (
           <>
-            <Header user={user} />
-            <Layout
-              lists={lists}
-              onSelectList={handleSelectList}
-              selectedListId={selectedListId}
-              setLists={setLists}
-              handleLogout={handleLogout}
-              user={user}
-            >
-              <Routes>
-                <Route path="/" element={<List selectedListId={selectedListId} />} />
-                <Route path="/profile" element={<Profile user={user} />} />
-                <Route path="/edit-profile" element={<EditProfile user={user} />} />
-              </Routes>
-            </Layout>
+            <Header user={user} handleLogout={handleLogout} />
+            <Routes>
+              <Route path="/" element={
+                <Layout
+                  lists={lists}
+                  onSelectList={handleSelectList}
+                  selectedListId={selectedListId}
+                  setLists={setLists}
+                  user={user}
+                >
+                  <List selectedListId={selectedListId} />
+                </Layout>
+              } />
+              <Route path="/profile" element={<Profile user={user} />} />
+              <Route path="/edit-profile" element={<EditProfile user={user} />} />
+            </Routes>
           </>
         ) : (
           <Container sx={{ mt: 4 }}>
