@@ -17,9 +17,9 @@ const Header = ({ user }) => {
   return (
     <AppBar position="relative" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
       <Toolbar sx={{ display: 'flex', alignItems: 'center' }}>
-        <Link to="/" className="header-title">
+        <Link to="/" sx={{ display: 'flex'}}>
           <img src={octopusLogo} alt="Logo" className="header-logo" />
-          <Typography variant="h6">
+          <Typography variant="h6" className="header-title">
             My List App
           </Typography>
         </Link>
