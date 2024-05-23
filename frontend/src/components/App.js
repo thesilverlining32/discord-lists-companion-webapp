@@ -84,9 +84,7 @@ const App = () => {
                   selectedListId={selectedListId}
                   setLists={setLists}
                   user={user}
-                >
-                  <List selectedListId={selectedListId} />
-                </Layout>
+                />
               } />
               <Route path="/profile" element={<Profile user={user} />} />
               <Route path="/edit-profile" element={<EditProfile user={user} />} />

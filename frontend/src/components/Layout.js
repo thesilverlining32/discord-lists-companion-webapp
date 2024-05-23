@@ -5,7 +5,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ListItemComponent from './ListItem';  // Import the ListItem component
 
-const Layout = ({ lists, onSelectList, selectedListId, setLists, children }) => {
+const Layout = ({ lists, onSelectList, selectedListId, setLists, user }) => {
   const [newListName, setNewListName] = useState('');
   const [editingListId, setEditingListId] = useState(null);
   const [editingListName, setEditingListName] = useState('');
@@ -109,7 +109,6 @@ const Layout = ({ lists, onSelectList, selectedListId, setLists, children }) => 
       </Box>
       <Box flexGrow={1} p={2}>
         {selectedListId && <ListItemComponent listId={selectedListId} />}
-        {children}
       </Box>
     </Box>
   );
