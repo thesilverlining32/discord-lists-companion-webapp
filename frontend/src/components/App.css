@@ -40,17 +40,6 @@
 	align-items: center;
 }
 
-/* Style for the header title */
-.header-title {
-	flex-grow: 1;
-}
-
-/* Style for the header title link */
-.header-title a {
-	text-decoration: none;
-	color: inherit;
-}
-
 /* Style for the user info box */
 .user-info {
 	display: flex;
