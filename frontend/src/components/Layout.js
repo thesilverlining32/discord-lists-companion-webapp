@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, List, ListItem, ListItemText, IconButton } from '@mui/material';
 import axios from 'axios';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ListItemComponent from './ListItem';
+import ListItemComponent from './ListItem';  // Import the ListItem component
 
-const Layout = ({ lists, onSelectList, selectedListId, setLists }) => {
+const Layout = ({ lists, onSelectList, selectedListId, setLists, children }) => {
   const [newListName, setNewListName] = useState('');
   const [editingListId, setEditingListId] = useState(null);
   const [editingListName, setEditingListName] = useState('');
@@ -48,6 +48,12 @@ const Layout = ({ lists, onSelectList, selectedListId, setLists }) => {
         console.error('There was an error deleting the list!', error);
       });
   };
+
+  useEffect(() => {
+    if (lists.length > 0 && !selectedListId) {
+      onSelectList(lists[0]._id);
+    }
+  }, [lists, selectedListId, onSelectList]);
 
   return (
     <Box display="flex">
@@ -102,7 +108,8 @@ const Layout = ({ lists, onSelectList, selectedListId, setLists }) => {
         )}
       </Box>
       <Box flexGrow={1} p={2}>
-        {selectedListId && <ListItem listId={selectedListId} />}
+        {selectedListId && <ListItemComponent listId={selectedListId} />}
+        {children}
       </Box>
     </Box>
   );
