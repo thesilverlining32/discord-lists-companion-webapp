@@ -19,7 +19,7 @@ const Header = ({ user }) => {
       <Toolbar sx={{ display: 'flex', alignItems: 'center' }}>
         <Link to="/" className="header-title">
           <img src={octopusLogo} alt="Logo" className="header-logo" />
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6">
             My List App
           </Typography>
         </Link>
