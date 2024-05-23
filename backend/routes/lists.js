@@ -55,8 +55,10 @@ router.post('/api/lists/:listId/items', isAuthenticated, (req, res) => {
     const newItem = new ListItem({
         content: req.body.content,
         description: req.body.description,
+        category: req.body.category,
         list: req.params.listId,
         createdBy: req.user._id,
+        metadata: req.body.metadata,  // Add this line to handle metadata
     });
     newItem.save()
         .then(item => {

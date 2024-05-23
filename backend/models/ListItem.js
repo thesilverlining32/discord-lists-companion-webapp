@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 
 const ListItemSchema = new mongoose.Schema({
-    content: {
+    content: String,
+    description: String,
+    category: {
         type: String,
+        enum: ['Movie', 'Game', 'TV Show'],
         required: true,
-    },
-    description: {
-        type: String,
     },
     list: {
         type: mongoose.Schema.Types.ObjectId,
@@ -16,7 +16,13 @@ const ListItemSchema = new mongoose.Schema({
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
+        required: true,
     },
-}, { timestamps: true });
+    metadata: {
+        title: String,
+        description: String,
+        imageUrl: String,
+    },
+});
 
 module.exports = mongoose.model('ListItem', ListItemSchema);
