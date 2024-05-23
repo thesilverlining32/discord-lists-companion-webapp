@@ -17,10 +17,12 @@ const Header = ({ user }) => {
   return (
     <AppBar position="relative" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
       <Toolbar sx={{ display: 'flex', alignItems: 'center' }}>
-        <img src={octopusLogo} alt="Logo" className="header-logo" />
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
-          My List App
-        </Typography>
+        <Link to="/" className="header-title">
+          <img src={octopusLogo} alt="Logo" className="header-logo" />
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            My List App
+          </Typography>
+        </Link>
         {user && (
           <Box display="flex" alignItems="center">
             <Avatar src={user.avatar} alt={user.username} onClick={handleMenuOpen} sx={{ cursor: 'pointer' }} />

@@ -45,6 +45,12 @@
 	flex-grow: 1;
 }
 
+/* Style for the header title link */
+.header-title a {
+	text-decoration: none;
+	color: inherit;
+}
+
 /* Style for the user info box */
 .user-info {
 	display: flex;
@@ -98,7 +104,7 @@
 .new-item-input,
 .new-item-description,
 .add-item-button {
-  margin-bottom: 16px;
+	margin-bottom: 16px;
 }
 
 /* Style for search and sort fields */
