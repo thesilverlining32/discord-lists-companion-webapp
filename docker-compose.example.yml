@@ -20,7 +20,7 @@ services:
       SESSION_SECRET: your_session_secret
       MONGODB_URI: mongodb://mongo:27017/my-list-app
       REDIRECT_URI: https://discord.localhost.com/auth/discord/callback
-      REACT_APP_OMDB_API_KEY: your_apikey
+      OMDB_API_KEY: your_apikey
       REACT_APP_IGDB_CLIENT_ID: your_client_id
       REACT_APP_IGDB_ACCESS_TOKEN: your_access_token
     ports:

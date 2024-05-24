@@ -8,7 +8,7 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const listRoutes = require('./routes/lists');
 const userRoutes = require('./routes/user');
-const omdbRoute = require('./routes/omdb');
+const apiRoutes = require('./routes/api');
 require('./config/passport');
 
 const app = express();
@@ -20,8 +20,8 @@ app.use(morgan('dev'));
 // Enable CORS for all routes
 app.use(cors());
 
-// Use the OMDB API route
-app.use(omdbRoute);
+// Use the API routes
+app.use(apiRoutes);
 
 // MongoDB Connection
 const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/my-list-app';
