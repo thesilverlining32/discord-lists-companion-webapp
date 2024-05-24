@@ -66,30 +66,21 @@ const ListItem = ({ listId }) => {
   const fetchMetadata = async (category, searchTerm) => {
     let metadata = {};
     if (category === 'Movie') {
-      // Example with OMDB API
-      const response = await axios.get(`http://www.omdbapi.com/?t=${searchTerm}&apikey=${process.env.REACT_APP_OMDB_API_KEY}`);
-      const data = response.data;
-      metadata = {
-        title: data.Title,
-        description: data.Plot,
-        imageUrl: data.Poster,
-      };
+      try {
+        const response = await axios.get(`https://www.omdbapi.com/?t=${searchTerm}&apikey=${process.env.REACT_APP_OMDB_API_KEY}`);
+        const data = response.data;
+        metadata = {
+          title: data.Title,
+          description: data.Plot,
+          imageUrl: data.Poster,
+        };
+      } catch (error) {
+        console.error('Error fetching movie metadata:', error);
+      }
     } else if (category === 'Game') {
-      // Example with IGDB API
-      const response = await axios.post(`https://api.igdb.com/v4/games`, `search "${searchTerm}"; fields name, summary, cover.url;`, {
-        headers: {
-          'Client-ID': process.env.REACT_APP_IGDB_CLIENT_ID,
-          'Authorization': `Bearer ${process.env.REACT_APP_IGDB_ACCESS_TOKEN}`
-        }
-      });
-      const data = response.data[0];
-      metadata = {
-        title: data.name,
-        description: data.summary,
-        imageUrl: data.cover?.url,
-      };
+      // Game fetching logic here (skip for now)
     } else if (category === 'TV Show') {
-      // Add TV Show metadata fetching logic here
+      // TV Show fetching logic here
     }
     return metadata;
   };
