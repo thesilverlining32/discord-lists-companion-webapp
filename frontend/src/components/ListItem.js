@@ -67,7 +67,7 @@ const ListItem = ({ listId }) => {
     let metadata = {};
     if (category === 'Movie') {
       // Example with OMDB API
-      const response = await axios.get(`http://www.omdbapi.com/?t=${searchTerm}&apikey=YOUR_OMDB_API_KEY`);
+      const response = await axios.get(`http://www.omdbapi.com/?t=${searchTerm}&apikey=${process.env.REACT_APP_OMDB_API_KEY}`);
       const data = response.data;
       metadata = {
         title: data.Title,
@@ -76,12 +76,11 @@ const ListItem = ({ listId }) => {
       };
     } else if (category === 'Game') {
       // Example with IGDB API
-      const response = await axios.post(`https://api.igdb.com/v4/games`, {
+      const response = await axios.post(`https://api.igdb.com/v4/games`, `search "${searchTerm}"; fields name, summary, cover.url;`, {
         headers: {
-          'Client-ID': 'YOUR_IGDB_CLIENT_ID',
-          'Authorization': 'Bearer YOUR_IGDB_ACCESS_TOKEN'
-        },
-        data: `search "${searchTerm}"; fields name, summary, cover.url;`
+          'Client-ID': process.env.REACT_APP_IGDB_CLIENT_ID,
+          'Authorization': `Bearer ${process.env.REACT_APP_IGDB_ACCESS_TOKEN}`
+        }
       });
       const data = response.data[0];
       metadata = {
@@ -94,6 +93,7 @@ const ListItem = ({ listId }) => {
     }
     return metadata;
   };
+
 
   const handleDialogOpen = () => {
     setOpenDialog(true);
