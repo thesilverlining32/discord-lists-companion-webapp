@@ -3,11 +3,7 @@ const mongoose = require('mongoose');
 const ListItemSchema = new mongoose.Schema({
     content: String,
     description: String,
-    category: {
-        type: String,
-        enum: ['Movie', 'Game', 'TV Show'],
-        required: true,
-    },
+    category: { type: String, required: true },
     list: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'List',

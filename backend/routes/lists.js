@@ -23,11 +23,6 @@ router.get('/api/lists', isAuthenticated, (req, res) => {
         .catch(err => res.status(500).json(err));
 });
 
-//Get a list items
-router.get('/api/lists/:listId/items', isAuthenticated, (req, res) => {
-    ListItem.find({ list: req.params.listId }).then(items => res.json(items)).catch(err => res.status(500).json(err));
-});
-
 // Update list
 router.put('/api/lists/:listId', isAuthenticated, (req, res) => {
     List.findByIdAndUpdate(req.params.listId, { name: req.body.name }, { new: true })
@@ -50,23 +45,32 @@ router.delete('/api/lists/:listId', isAuthenticated, async (req, res) => {
     }
 });
 
-// Create a new list item
-router.post('/api/lists/:listId/items', isAuthenticated, (req, res) => {
-    const newItem = new ListItem({
-        content: req.body.content,
-        description: req.body.description,
-        category: req.body.category,
-        list: req.params.listId,
-        createdBy: req.user._id,
-        metadata: req.body.metadata,  // Add this line to handle metadata
-    });
-    newItem.save()
-        .then(item => {
-            List.findById(req.params.listId).then(list => {
-                list.items.push(item);
-                list.save().then(() => res.json(item));
-            });
-        }).catch(err => res.status(500).json(err));
+// Create a new item in a list
+router.post('/api/lists/:listId/items', isAuthenticated, async (req, res) => {
+    try {
+        const { content, description, category, metadata } = req.body;
+        const listId = req.params.listId;
+        const createdBy = req.user._id;
+
+        const newItem = new ListItem({
+            content,
+            description,
+            category,
+            list: listId,
+            createdBy,
+            metadata,
+        });
+
+        const savedItem = await newItem.save();
+        res.status(201).json(savedItem);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
+
+//Get a list items
+router.get('/api/lists/:listId/items', isAuthenticated, (req, res) => {
+    ListItem.find({ list: req.params.listId }).then(items => res.json(items)).catch(err => res.status(500).json(err));
 });
 
 // Update list item

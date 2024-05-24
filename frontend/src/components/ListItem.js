@@ -3,7 +3,8 @@ import axios from 'axios';
 import {
   Box, TextField, Button, CircularProgress, List as MUIList, ListItem as MUIListItem,
   ListItemText, IconButton, FormControl, InputLabel, Select, MenuItem, Snackbar,
-  Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, ListSubheader
+  Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
+  ListSubheader
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -41,25 +42,41 @@ const ListItem = ({ listId }) => {
       });
   };
 
+  const handleSearch = async () => {
+    let results = [];
+    if (category === 'Movie') {
+      const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/omdb-key`);
+      const omdbApiKey = response.data.apiKey;
+      const movieResponse = await axios.get(`https://www.omdbapi.com/?s=${searchTerm}&apikey=${omdbApiKey}`);
+      results = movieResponse.data.Search.map(movie => ({
+        title: movie.Title,
+        description: `Year: ${movie.Year}`,
+        imageUrl: movie.Poster,
+        metadata: {
+          title: movie.Title,
+          description: `Year: ${movie.Year}`,
+          imageUrl: movie.Poster,
+        }
+      }));
+    }
+    setSearchResults(results);
+  };
+
   const handleAddItem = () => {
-    const itemData = selectedResult ? {
-      content: selectedResult.title,
-      description: selectedResult.description,
-      metadata: selectedResult
-    } : {
+    const newItem = {
       content: itemContent,
       description: itemDescription,
+      category,
+      metadata: selectedResult ? selectedResult.metadata : {}
     };
 
-    axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items`, itemData)
+    axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items`, newItem)
       .then(response => {
         setItems([...items, response.data]);
         setItemContent('');
         setItemDescription('');
         setSnackbar({ open: true, message: 'Item added successfully!', severity: 'success' });
         setOpenAddDialog(false);
-        setSelectedResult(null);
-        setSearchResults([]);
       })
       .catch(error => {
         console.error('There was an error adding the item!', error);
@@ -112,37 +129,6 @@ const ListItem = ({ listId }) => {
   const filteredItems = items.filter(item => item.content.toLowerCase().includes(searchTerm.toLowerCase()));
   const sortedItems = filteredItems.sort((a, b) => (sortOrder === 'asc' ? a.content.localeCompare(b.content) : b.content.localeCompare(a.content)));
 
-  const fetchMetadata = async (category, searchTerm) => {
-    let results = [];
-    try {
-      if (category === 'Movie') {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/omdb-key`);
-        const omdbApiKey = response.data.apiKey;
-        const movieResponse = await axios.get(`https://www.omdbapi.com/?s=${searchTerm}&apikey=${omdbApiKey}`);
-        results = movieResponse.data.Search.map(item => ({
-          title: item.Title,
-          description: `Year: ${item.Year}`,
-          imageUrl: item.Poster,
-        }));
-      } else if (category === 'Game') {
-        // Game metadata fetching logic here
-      } else if (category === 'TV Show') {
-        // Add TV Show metadata fetching logic here
-      } else if (category === 'Music') {
-        // Add Music metadata fetching logic here
-      }
-    } catch (error) {
-      console.error('Error fetching metadata:', error);
-    }
-    setSearchResults(results);
-  };
-
-  const handleSearch = () => {
-    if (category && itemContent) {
-      fetchMetadata(category, itemContent);
-    }
-  };
-
   return (
     <Box>
       <Box mb={2} display="flex" justifyContent="space-between">
@@ -190,7 +176,43 @@ const ListItem = ({ listId }) => {
               <MenuItem value="Other">Other</MenuItem>
             </Select>
           </FormControl>
-          {category === 'Other' ? (
+          <TextField
+            margin="dense"
+            label="Search Term"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            disabled={category === 'Other'}
+          />
+          <Button onClick={handleSearch} color="primary" variant="contained" fullWidth disabled={category === 'Other'}>
+            Search
+          </Button>
+          {searchResults.length > 0 && (
+            <Box mt={2}>
+              <ListSubheader>Search Results</ListSubheader>
+              <MUIList>
+                {searchResults.map((result, index) => (
+                  <MUIListItem
+                    key={index}
+                    button
+                    selected={selectedResult === result}
+                    onClick={() => setSelectedResult(result)}
+                  >
+                    {result.imageUrl && (
+                      <img src={result.imageUrl} alt={result.title} style={{ width: '50px', marginRight: '10px' }} />
+                    )}
+                    <ListItemText
+                      primary={result.title}
+                      secondary={result.description}
+                    />
+                  </MUIListItem>
+                ))}
+              </MUIList>
+            </Box>
+          )}
+          {category === 'Other' && (
             <>
               <TextField
                 margin="dense"
@@ -211,40 +233,6 @@ const ListItem = ({ listId }) => {
                 onChange={(e) => setItemDescription(e.target.value)}
               />
             </>
-          ) : (
-            <>
-              <TextField
-                margin="dense"
-                label="Search Term"
-                type="text"
-                fullWidth
-                variant="outlined"
-                value={itemContent}
-                onChange={(e) => setItemContent(e.target.value)}
-              />
-              <Button onClick={handleSearch} color="primary" variant="contained" style={{ marginTop: '10px' }}>
-                Search
-              </Button>
-            </>
-          )}
-          {searchResults.length > 0 && (
-            <Box mt={2}>
-              <MUIList subheader={<ListSubheader>Search Results</ListSubheader>}>
-                {searchResults.map((result, index) => (
-                  <MUIListItem
-                    button
-                    key={index}
-                    selected={selectedResult === result}
-                    onClick={() => setSelectedResult(result)}
-                  >
-                    {result.imageUrl && (
-                      <img src={result.imageUrl} alt={result.title} style={{ width: '50px', marginRight: '10px' }} />
-                    )}
-                    <ListItemText primary={result.title} secondary={result.description} />
-                  </MUIListItem>
-                ))}
-              </MUIList>
-            </Box>
           )}
         </DialogContent>
         <DialogActions>
