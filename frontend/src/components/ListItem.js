@@ -3,7 +3,7 @@ import axios from 'axios';
 import {
   Box, TextField, Button, CircularProgress, List as MUIList, ListItem as MUIListItem,
   ListItemText, IconButton, FormControl, InputLabel, Select, MenuItem, Snackbar,
-  Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle
+  Alert, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, ListSubheader
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -20,6 +20,8 @@ const ListItem = ({ listId }) => {
   const [sortOrder, setSortOrder] = useState('asc');
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [category, setCategory] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedResult, setSelectedResult] = useState(null);
 
   useEffect(() => {
     if (listId) {
@@ -39,19 +41,25 @@ const ListItem = ({ listId }) => {
       });
   };
 
-  const handleAddItem = async () => {
-    let metadata = {};
-    if (category && itemContent) {
-      metadata = await fetchMetadata(category, itemContent);
-    }
+  const handleAddItem = () => {
+    const itemData = selectedResult ? {
+      content: selectedResult.title,
+      description: selectedResult.description,
+      metadata: selectedResult
+    } : {
+      content: itemContent,
+      description: itemDescription,
+    };
 
-    axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items`, { content: itemContent, description: itemDescription, metadata })
+    axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${listId}/items`, itemData)
       .then(response => {
         setItems([...items, response.data]);
         setItemContent('');
         setItemDescription('');
         setSnackbar({ open: true, message: 'Item added successfully!', severity: 'success' });
         setOpenAddDialog(false);
+        setSelectedResult(null);
+        setSearchResults([]);
       })
       .catch(error => {
         console.error('There was an error adding the item!', error);
@@ -105,29 +113,34 @@ const ListItem = ({ listId }) => {
   const sortedItems = filteredItems.sort((a, b) => (sortOrder === 'asc' ? a.content.localeCompare(b.content) : b.content.localeCompare(a.content)));
 
   const fetchMetadata = async (category, searchTerm) => {
-    let metadata = {};
+    let results = [];
     try {
       if (category === 'Movie') {
-        // Fetch OMDB API key
         const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/omdb-key`);
         const omdbApiKey = response.data.apiKey;
-        // Fetch movie metadata
-        const movieResponse = await axios.get(`https://www.omdbapi.com/?t=${searchTerm}&apikey=${omdbApiKey}`);
-        const data = movieResponse.data;
-        metadata = {
-          title: data.Title,
-          description: data.Plot,
-          imageUrl: data.Poster,
-        };
+        const movieResponse = await axios.get(`https://www.omdbapi.com/?s=${searchTerm}&apikey=${omdbApiKey}`);
+        results = movieResponse.data.Search.map(item => ({
+          title: item.Title,
+          description: `Year: ${item.Year}`,
+          imageUrl: item.Poster,
+        }));
       } else if (category === 'Game') {
         // Game metadata fetching logic here
       } else if (category === 'TV Show') {
         // Add TV Show metadata fetching logic here
+      } else if (category === 'Music') {
+        // Add Music metadata fetching logic here
       }
     } catch (error) {
       console.error('Error fetching metadata:', error);
     }
-    return metadata;
+    setSearchResults(results);
+  };
+
+  const handleSearch = () => {
+    if (category && itemContent) {
+      fetchMetadata(category, itemContent);
+    }
   };
 
   return (
@@ -158,30 +171,11 @@ const ListItem = ({ listId }) => {
         </Box>
       </Box>
       <Dialog open={openAddDialog} onClose={() => setOpenAddDialog(false)}>
-        <DialogTitle>Add New Item</DialogTitle>
+        <DialogTitle>Search for New Item</DialogTitle>
         <DialogContent>
           <DialogContentText>
             Enter the details for the new item.
           </DialogContentText>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Item Content"
-            type="text"
-            fullWidth
-            variant="outlined"
-            value={itemContent}
-            onChange={(e) => setItemContent(e.target.value)}
-          />
-          <TextField
-            margin="dense"
-            label="Description"
-            type="text"
-            fullWidth
-            variant="outlined"
-            value={itemDescription}
-            onChange={(e) => setItemDescription(e.target.value)}
-          />
           <FormControl fullWidth variant="outlined" margin="dense">
             <InputLabel>Category</InputLabel>
             <Select
@@ -192,14 +186,72 @@ const ListItem = ({ listId }) => {
               <MenuItem value="Movie">Movie</MenuItem>
               <MenuItem value="Game">Game</MenuItem>
               <MenuItem value="TV Show">TV Show</MenuItem>
+              <MenuItem value="Music">Music</MenuItem>
+              <MenuItem value="Other">Other</MenuItem>
             </Select>
           </FormControl>
+          {category === 'Other' ? (
+            <>
+              <TextField
+                margin="dense"
+                label="Item Content"
+                type="text"
+                fullWidth
+                variant="outlined"
+                value={itemContent}
+                onChange={(e) => setItemContent(e.target.value)}
+              />
+              <TextField
+                margin="dense"
+                label="Description"
+                type="text"
+                fullWidth
+                variant="outlined"
+                value={itemDescription}
+                onChange={(e) => setItemDescription(e.target.value)}
+              />
+            </>
+          ) : (
+            <>
+              <TextField
+                margin="dense"
+                label="Search Term"
+                type="text"
+                fullWidth
+                variant="outlined"
+                value={itemContent}
+                onChange={(e) => setItemContent(e.target.value)}
+              />
+              <Button onClick={handleSearch} color="primary" variant="contained" style={{ marginTop: '10px' }}>
+                Search
+              </Button>
+            </>
+          )}
+          {searchResults.length > 0 && (
+            <Box mt={2}>
+              <MUIList subheader={<ListSubheader>Search Results</ListSubheader>}>
+                {searchResults.map((result, index) => (
+                  <MUIListItem
+                    button
+                    key={index}
+                    selected={selectedResult === result}
+                    onClick={() => setSelectedResult(result)}
+                  >
+                    {result.imageUrl && (
+                      <img src={result.imageUrl} alt={result.title} style={{ width: '50px', marginRight: '10px' }} />
+                    )}
+                    <ListItemText primary={result.title} secondary={result.description} />
+                  </MUIListItem>
+                ))}
+              </MUIList>
+            </Box>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenAddDialog(false)} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleAddItem} color="primary">
+          <Button onClick={handleAddItem} color="primary" disabled={category !== 'Other' && !selectedResult}>
             Add Item
           </Button>
         </DialogActions>
