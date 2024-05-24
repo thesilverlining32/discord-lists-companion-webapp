@@ -106,18 +106,26 @@ const ListItem = ({ listId }) => {
 
   const fetchMetadata = async (category, searchTerm) => {
     let metadata = {};
-    if (category === 'Movie') {
-      const response = await axios.get(`/api/metadata/movie?title=${searchTerm}`);
-      const data = response.data;
-      metadata = {
-        title: data.Title,
-        description: data.Plot,
-        imageUrl: data.Poster,
-      };
-    } else if (category === 'Game') {
-      // IGDB fetch logic can be added here later
-    } else if (category === 'TV Show') {
-      // Add TV Show metadata fetching logic here
+    try {
+      if (category === 'Movie') {
+        // Fetch OMDB API key
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/omdb-key`);
+        const omdbApiKey = response.data.apiKey;
+        // Fetch movie metadata
+        const movieResponse = await axios.get(`https://www.omdbapi.com/?t=${searchTerm}&apikey=${omdbApiKey}`);
+        const data = movieResponse.data;
+        metadata = {
+          title: data.Title,
+          description: data.Plot,
+          imageUrl: data.Poster,
+        };
+      } else if (category === 'Game') {
+        // Game metadata fetching logic here
+      } else if (category === 'TV Show') {
+        // Add TV Show metadata fetching logic here
+      }
+    } catch (error) {
+      console.error('Error fetching metadata:', error);
     }
     return metadata;
   };
