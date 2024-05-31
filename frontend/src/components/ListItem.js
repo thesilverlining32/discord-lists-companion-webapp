@@ -23,6 +23,8 @@ const ListItem = ({ listId }) => {
   const [category, setCategory] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [selectedResult, setSelectedResult] = useState(null);
+  const [addItemSearchTerm, setAddItemSearchTerm] = useState('');
+
 
   useEffect(() => {
     if (listId) {
@@ -122,6 +124,10 @@ const ListItem = ({ listId }) => {
     setSearchTerm(event.target.value);
   };
 
+  const handleAddItemSearchChange = (event) => {
+    setAddItemSearchTerm(event.target.value);
+  };
+
   const handleSortOrderChange = (event) => {
     setSortOrder(event.target.value);
   };
@@ -182,8 +188,8 @@ const ListItem = ({ listId }) => {
             type="text"
             fullWidth
             variant="outlined"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={addItemSearchTerm} // Use new state variable
+            onChange={handleAddItemSearchChange} // Use new handler
             disabled={category === 'Other'}
           />
           <Button onClick={handleSearch} color="primary" variant="contained" fullWidth disabled={category === 'Other'}>
