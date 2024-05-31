@@ -49,7 +49,7 @@ const ListItem = ({ listId }) => {
     if (category === 'Movie') {
       const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/omdb-key`);
       const omdbApiKey = response.data.apiKey;
-      const movieResponse = await axios.get(`https://www.omdbapi.com/?s=${searchTerm}&apikey=${omdbApiKey}`);
+      const movieResponse = await axios.get(`https://www.omdbapi.com/?s=${addItemSearchTerm}&apikey=${omdbApiKey}`);
       results = movieResponse.data.Search.map(movie => ({
         title: movie.Title,
         description: `Year: ${movie.Year}`,
@@ -132,8 +132,16 @@ const ListItem = ({ listId }) => {
     setSortOrder(event.target.value);
   };
 
-  const filteredItems = items.filter(item => item.content.toLowerCase().includes(searchTerm.toLowerCase()));
-  const sortedItems = filteredItems.sort((a, b) => (sortOrder === 'asc' ? a.content.localeCompare(b.content) : b.content.localeCompare(a.content)));
+  const filteredItems = items.filter(item => {
+    const searchTermLower = searchTerm.toLowerCase();
+    const contentMatch = item.content.toLowerCase().includes(searchTermLower);
+    const titleMatch = item.metadata && item.metadata.title ? item.metadata.title.toLowerCase().includes(searchTermLower) : false;
+    return contentMatch || titleMatch;
+});
+
+const sortedItems = filteredItems.sort((a, b) =>
+    sortOrder === 'asc' ? a.content.localeCompare(b.content) : b.content.localeCompare(a.content)
+);
 
   return (
     <Box>
