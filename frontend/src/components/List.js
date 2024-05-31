@@ -1,50 +1,58 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Box, Typography, CircularProgress, List as MUIList, ListItem as MUIListItem, ListItemText, IconButton } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, IconButton, Menu, MenuItem, ListItem as MUIListItem, ListItemText, ListItemSecondaryAction } from '@mui/material';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-const List = ({ selectedListId }) => {
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+const List = ({ lists, handleEdit, handleDelete }) => {
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedList, setSelectedList] = useState(null);
 
-  useEffect(() => {
-    if (selectedListId) {
-      axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${selectedListId}/items`)
-        .then(response => {
-          setItems(response.data);
-          setLoading(false);
-        })
-        .catch(error => {
-          console.error('There was an error fetching the items!', error);
-          setLoading(false);
-        });
-    }
-  }, [selectedListId]);
+  const handleMenuOpen = (event, list) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedList(list);
+  };
 
-  if (loading) {
-    return <CircularProgress />;
-  }
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setSelectedList(null);
+  };
 
-  if (!selectedListId) {
-    return <Typography>Select a list to view items.</Typography>;
-  }
+  const handleEditClick = () => {
+    handleEdit(selectedList);
+    handleMenuClose();
+  };
+
+  const handleDeleteClick = () => {
+    handleDelete(selectedList);
+    handleMenuClose();
+  };
 
   return (
     <Box>
-      <MUIList>
-        {items.map(item => (
-          <MUIListItem key={item._id}>
-            <ListItemText primary={item.content} secondary={item.description} />
-            <IconButton edge="end" aria-label="edit">
-              <EditIcon />
+      {lists.map(list => (
+        <MUIListItem key={list._id} divider>
+          <ListItemText primary={list.name} secondary={list.description} />
+          <ListItemSecondaryAction>
+            <IconButton edge="end" aria-label="more" onClick={(e) => handleMenuOpen(e, list)}>
+              <MoreVertIcon />
             </IconButton>
-            <IconButton edge="end" aria-label="delete">
-              <DeleteIcon />
-            </IconButton>
-          </MUIListItem>
-        ))}
-      </MUIList>
+            <Menu
+              anchorEl={anchorEl}
+              keepMounted
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+            >
+              <MenuItem onClick={handleEditClick}>
+                <EditIcon /> Edit
+              </MenuItem>
+              <MenuItem onClick={handleDeleteClick}>
+                <DeleteIcon /> Delete
+              </MenuItem>
+            </Menu>
+          </ListItemSecondaryAction>
+        </MUIListItem>
+      ))}
     </Box>
   );
 };
