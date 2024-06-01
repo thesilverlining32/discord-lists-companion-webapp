@@ -1,97 +1,103 @@
-const express = require('express');
+const router = require('express').Router();
 const List = require('../models/List');
-const ListItem = require('../models/ListItem');
-const isAuthenticated = require('../middlewares/isAuthenticated');
+const Item = require('../models/Item');
 
-const router = express.Router();
+// Middleware to check if the user is authenticated
+function isAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    res.status(401).json({ message: 'Unauthorized' });
+}
 
-// Create a new list
-router.post('/api/lists', isAuthenticated, (req, res) => {
-    const newList = new List({
-        name: req.body.name,
-        createdBy: req.user._id,
-    });
-    newList.save()
-        .then(list => res.json(list))
-        .catch(err => res.status(500).json(err));
-});
-
-// Get all lists
-router.get('/api/lists', isAuthenticated, (req, res) => {
-    List.find({ createdBy: req.user._id }).populate('items')
-        .then(lists => res.json(lists))
-        .catch(err => res.status(500).json(err));
-});
-
-// Update list
-router.put('/api/lists/:listId', isAuthenticated, (req, res) => {
-    List.findByIdAndUpdate(req.params.listId, { name: req.body.name }, { new: true })
-        .then(list => res.json(list))
-        .catch(err => res.status(500).json(err));
-});
-
-// Delete list if it is empty
-router.delete('/api/lists/:listId', isAuthenticated, async (req, res) => {
+// Routes for lists
+router.get('/', isAuthenticated, async (req, res) => {
     try {
-        const list = await List.findById(req.params.listId).populate('items');
-        if (list.items.length === 0) {
-            await List.findByIdAndDelete(req.params.listId);
-            res.json({ message: 'List deleted successfully' });
-        } else {
-            res.status(400).json({ error: 'List is not empty' });
-        }
+        const lists = await List.find({ userId: req.user.id });
+        res.json(lists);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ message: error.message });
     }
 });
 
-// Create a new item in a list
-router.post('/api/lists/:listId/items', isAuthenticated, async (req, res) => {
+router.post('/', isAuthenticated, async (req, res) => {
     try {
-        const { content, description, category, metadata } = req.body;
-        const listId = req.params.listId;
-        const createdBy = req.user._id;
-
-        const newItem = new ListItem({
-            content,
-            description,
-            category,
-            list: listId,
-            createdBy,
-            metadata,
+        const newList = new List({
+            name: req.body.name,
+            userId: req.user.id
         });
-
-        const savedItem = await newItem.save();
-        res.status(201).json(savedItem);
+        const list = await newList.save();
+        res.json(list);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        res.status(500).json({ message: error.message });
     }
 });
 
-//Get a list items
-router.get('/api/lists/:listId/items', isAuthenticated, (req, res) => {
-    ListItem.find({ list: req.params.listId }).then(items => res.json(items)).catch(err => res.status(500).json(err));
-});
-
-// Update list item
-router.put('/api/lists/:listId/items/:itemId', isAuthenticated, async (req, res) => {
+router.put('/:id', isAuthenticated, async (req, res) => {
     try {
-        const { listId, itemId } = req.params;
-        const updatedItem = await ListItem.findByIdAndUpdate(itemId, req.body, { new: true });
-        res.json(updatedItem);
+        const list = await List.findByIdAndUpdate(req.params.id, { name: req.body.name }, { new: true });
+        res.json(list);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ message: error.message });
     }
 });
 
-// Delete list item
-router.delete('/api/lists/:listId/items/:itemId', isAuthenticated, async (req, res) => {
+router.delete('/:id', isAuthenticated, async (req, res) => {
     try {
-        const { listId, itemId } = req.params;
-        await ListItem.findByIdAndDelete(itemId);
-        res.json({ message: 'Item deleted' });
+        await List.findByIdAndDelete(req.params.id);
+        res.json({ success: true });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Routes for items
+router.get('/:listId/items', isAuthenticated, async (req, res) => {
+    try {
+        const items = await Item.find({ listId: req.params.listId });
+        res.json(items);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.post('/:listId/items', isAuthenticated, async (req, res) => {
+    try {
+        const newItem = new Item({
+            title: req.body.title,
+            description: req.body.description,
+            rating: req.body.rating,
+            imageUrl: req.body.imageUrl,
+            listId: req.params.listId,
+            userId: req.user.id
+        });
+        const item = await newItem.save();
+        res.json(item);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.put('/:listId/items/:itemId', isAuthenticated, async (req, res) => {
+    try {
+        const item = await Item.findByIdAndUpdate(req.params.itemId, {
+            title: req.body.title,
+            description: req.body.description,
+            rating: req.body.rating,
+            imageUrl: req.body.imageUrl
+        }, { new: true });
+        res.json(item);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+router.delete('/:listId/items/:itemId', isAuthenticated, async (req, res) => {
+    try {
+        await Item.findByIdAndDelete(req.params.itemId);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 });
 
