@@ -5,8 +5,6 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 
-require('./config/passport');
-
 dotenv.config();
 
 const app = express();
@@ -20,7 +18,10 @@ app.use(passport.session());
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URL, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB connected'))
-  .catch(err => console.log(err));
+  .catch(err => {
+    console.error('MongoDB connection error:', err.message);
+    process.exit(1);
+  });
 
 // Routes
 app.use('/auth', require('./routes/auth'));

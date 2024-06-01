@@ -13,10 +13,10 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - MONGO_URL=mongodb://mongo:27017/lists
-      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
-      - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
-      - DISCORD_CALLBACK_URL=http://localhost:5000/auth/discord/callback
+      MONGO_URL: mongodb://mongo:27017/lists
+      DISCORD_CLIENT_ID: DISCORD_CLIENT_ID
+      DISCORD_CLIENT_SECRET: DISCORD_CLIENT_SECRET
+      DISCORD_CALLBACK_URL: http://localhost:5000/auth/discord/callback
 
   mongo:
     image: mongo
