@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import List from './pages/List';
@@ -21,28 +21,19 @@ function App() {
     return (
         <Router>
             <div className="App">
-                <Switch>
-                    <Route exact path="/" component={Home} />
-                    <Route path="/login" component={Login} />
-                    <PrivateRoute path="/dashboard" component={Dashboard} />
-                    <PrivateRoute path="/list/:id" component={List} />
-                </Switch>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+                    <Route path="/list/:id" element={<PrivateRoute><List /></PrivateRoute>} />
+                </Routes>
             </div>
         </Router>
     );
 }
 
-const PrivateRoute = ({ component: Component, ...rest }) => (
-    <Route
-        {...rest}
-        render={props =>
-            isAuthenticated() ? (
-                <Component {...props} />
-            ) : (
-                <Redirect to="/login" />
-            )
-        }
-    />
-);
+const PrivateRoute = ({ children }) => {
+    return isAuthenticated() ? children : <Navigate to="/login" />;
+};
 
 export default App;
