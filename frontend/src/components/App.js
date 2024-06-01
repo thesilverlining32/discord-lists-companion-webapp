@@ -69,6 +69,24 @@ const App = () => {
     setSelectedListId(listId);
   };
 
+  const handleEditList = (list) => {
+    // Implement edit list logic here
+    console.log('Editing list:', list);
+  };
+
+  const handleDeleteList = (list) => {
+    axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/lists/${list._id}`)
+      .then(() => {
+        setLists(lists.filter(item => item._id !== list._id));
+        if (selectedListId === list._id) {
+          setSelectedListId(lists.length > 0 ? lists[0]._id : null);
+        }
+      })
+      .catch(error => {
+        console.error('Error deleting list:', error);
+      });
+  };
+
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
