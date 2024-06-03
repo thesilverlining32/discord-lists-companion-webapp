@@ -7,7 +7,8 @@ import Login from './pages/Login';
 
 function App() {
     useEffect(() => {
-        const token = new URLSearchParams(window.location.search).get('token');
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('token');
         if (token) {
             localStorage.setItem('token', token);
             window.history.replaceState(null, null, window.location.pathname);

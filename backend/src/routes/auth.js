@@ -10,7 +10,8 @@ router.get('/discord/callback', (req, res, next) => {
     failureRedirect: '/'
 }), (req, res) => {
     console.log('Discord authentication successful');
-    res.redirect('https://discord-app.ggior32.dev/dashboard');
+    const token = req.user ? req.user._id : null;
+    res.redirect(`https://discord-app.ggior32.dev/dashboard?token=${token}`);
 });
 
 router.get('/logout', (req, res) => {
