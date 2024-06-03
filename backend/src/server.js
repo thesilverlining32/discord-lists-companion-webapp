@@ -4,8 +4,7 @@ const passport = require('passport');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
-
-require('./config/passport');
+const helmet = require('helmet');
 
 dotenv.config();
 
@@ -16,6 +15,19 @@ app.use(bodyParser.json());
 app.use(session({ secret: 'your_secret_key', resave: false, saveUninitialized: false }));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(
+    helmet.contentSecurityPolicy({
+        directives: {
+            defaultSrc: ["'self'"],
+            imgSrc: ["'self'", "data:", "https://discord-app-backend.ggior32.dev"],
+            scriptSrc: ["'self'", "https://discord-app-backend.ggior32.dev"],
+            styleSrc: ["'self'", "'unsafe-inline'"]
+        }
+    })
+);
+
+// Load passport configuration
+require('./config/passport');
 
 // MongoDB connection
 mongoose.connect(process.env.MONGO_URL, { useNewUrlParser: true, useUnifiedTopology: true })
