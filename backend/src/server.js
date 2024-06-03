@@ -5,6 +5,8 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 
+require('./config/passport');
+
 dotenv.config();
 
 const app = express();
