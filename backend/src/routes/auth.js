@@ -3,9 +3,13 @@ const passport = require('passport');
 
 router.get('/discord', passport.authenticate('discord'));
 
-router.get('/discord/callback', passport.authenticate('discord', {
+router.get('/discord/callback', (req, res, next) => {
+    console.log('Discord callback hit');
+    next();
+}, passport.authenticate('discord', {
     failureRedirect: '/'
 }), (req, res) => {
+    console.log('Discord authentication successful');
     res.redirect('/dashboard');
 });
 
