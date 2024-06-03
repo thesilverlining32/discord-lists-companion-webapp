@@ -6,10 +6,13 @@ passport.serializeUser((user, done) => {
     done(null, user.id);
 });
 
-passport.deserializeUser((id, done) => {
-    User.findById(id, (err, user) => {
-        done(err, user);
-    });
+passport.deserializeUser(async (id, done) => {
+    try {
+        const user = await User.findById(id);
+        done(null, user);
+    } catch (err) {
+        done(err);
+    }
 });
 
 passport.use(new DiscordStrategy({
@@ -17,9 +20,14 @@ passport.use(new DiscordStrategy({
     clientSecret: process.env.DISCORD_CLIENT_SECRET,
     callbackURL: process.env.DISCORD_CALLBACK_URL,
     scope: ['identify', 'email']
-}, (accessToken, refreshToken, profile, done) => {
-    User.findOne({ discordId: profile.id }, (err, user) => {
-        if (err) return done(err);
+}, async (accessToken, refreshToken, profile, done) => {
+    try {
+        console.log("Access Token: ", accessToken);
+        console.log("Refresh Token: ", refreshToken);
+        console.log("Profile: ", profile);
+
+        let user = await User.findOne({ discordId: profile.id });
+
         if (user) {
             return done(null, user);
         } else {
@@ -28,10 +36,10 @@ passport.use(new DiscordStrategy({
                 username: profile.username,
                 email: profile.email
             });
-            newUser.save(err => {
-                if (err) return done(err);
-                return done(null, newUser);
-            });
+            user = await newUser.save();
+            return done(null, user);
         }
-    });
+    } catch (err) {
+        return done(err);
+    }
 }));

@@ -26,6 +26,8 @@ function App() {
                     <Route path="/login" element={<Login />} />
                     <Route path="/dashboard" element={isAuthenticated() ? <Dashboard /> : <Navigate to="/login" />} />
                     <Route path="/list/:id" element={isAuthenticated() ? <List /> : <Navigate to="/login" />} />
+                    {/* Catch-all route to handle undefined routes */}
+                    <Route path="*" element={<Navigate to="/" />} />
                 </Routes>
             </div>
         </Router>
