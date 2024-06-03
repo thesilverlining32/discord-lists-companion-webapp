@@ -9,14 +9,18 @@ function App() {
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const token = params.get('token');
+        console.log('Token from URL:', token);  // Debugging line
         if (token) {
             localStorage.setItem('token', token);
             window.history.replaceState(null, null, window.location.pathname);
+            console.log('Token stored in localStorage:', localStorage.getItem('token'));  // Debugging line
         }
     }, []);
 
     const isAuthenticated = () => {
-        return localStorage.getItem('token') !== null;
+        const token = localStorage.getItem('token');
+        console.log('Token in isAuthenticated:', token);  // Debugging line
+        return token !== null;
     };
 
     return (
