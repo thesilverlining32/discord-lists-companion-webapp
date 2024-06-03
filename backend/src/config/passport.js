@@ -27,6 +27,7 @@ passport.use(new DiscordStrategy({
         console.log("Profile: ", profile);
 
         let user = await User.findOne({ discordId: profile.id });
+        console.log("User found: ", user);
 
         if (user) {
             return done(null, user);
@@ -37,9 +38,11 @@ passport.use(new DiscordStrategy({
                 email: profile.email
             });
             user = await newUser.save();
+            console.log("New user created: ", user);
             return done(null, user);
         }
     } catch (err) {
+        console.error("Error during authentication: ", err);
         return done(err);
     }
 }));
