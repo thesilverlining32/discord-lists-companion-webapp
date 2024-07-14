@@ -1,4 +1,3 @@
-# app/main.py
 from fastapi import FastAPI
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.auth import router as auth_router
@@ -10,7 +9,7 @@ app.include_router(auth_router, prefix="/auth", tags=["auth"])
 
 @app.on_event("startup")
 async def startup_db_client():
-    app.mongodb_client = AsyncIOMotorClient(settings.mongodb_url)
+    app.mongodb_client = AsyncIOMotorClient(settings.mongodb_connection_string)
     app.mongodb = app.mongodb_client.idea_list_db
 
 @app.on_event("shutdown")
