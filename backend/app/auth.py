@@ -1,13 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from pydantic import BaseModel
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
 import httpx
 from app.config import settings
-from app.models import User
+from app.models import UserModel
 from motor.motor_asyncio import AsyncIOMotorClient
-from fastapi import Request
 
 router = APIRouter()
 
@@ -23,7 +22,7 @@ class Token(BaseModel):
 async def get_user_by_discord_id(db: AsyncIOMotorClient, discord_id: str):
     user = await db.users.find_one({"discord_id": discord_id})
     if user:
-        return User(**user)
+        return UserModel(**user)
     return None
 
 async def create_or_update_user(db: AsyncIOMotorClient, user_data: dict):
@@ -40,14 +39,14 @@ async def create_or_update_user(db: AsyncIOMotorClient, user_data: dict):
         )
     else:
         # Create new user
-        new_user = User(
+        new_user = UserModel(
             discord_id=user_data["id"],
             username=user_data["username"],
             email=user_data["email"],
             avatar=user_data.get("avatar"),
             is_approved=False  # New users are not approved by default
         )
-        await db.users.insert_one(new_user.model_dump(by_alias=True))
+        await db.users.insert_one(new_user.model_dump(by_alias=True, exclude_none=True))
     return await get_user_by_discord_id(db, user_data["id"])
 
 def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=15)):

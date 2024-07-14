@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional, Any
+from typing import Optional
 from bson import ObjectId
 
 class PyObjectId(ObjectId):
@@ -14,11 +14,15 @@ class PyObjectId(ObjectId):
         return ObjectId(v)
 
     @classmethod
-    def __get_pydantic_json_schema__(cls, field_schema: Any) -> None:
-        field_schema.update(type="string")
+    def __get_pydantic_core_schema__(cls, _source_type, _handler):
+        return {
+            'type': 'custom',
+            'typename': 'ObjectId',
+            'validator': lambda v: str(v),
+        }
 
-class User(BaseModel):
-    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+class UserModel(BaseModel):
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
     discord_id: str
     username: str
     email: str
