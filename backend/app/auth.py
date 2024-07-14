@@ -1,9 +1,10 @@
+# app/auth.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from pydantic import BaseModel
 from jose import jwt
 import httpx
-from .config import settings
+from app.config import settings
 
 router = APIRouter()
 
