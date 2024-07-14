@@ -11,6 +11,7 @@ app.include_router(auth_router, prefix="/auth", tags=["auth"])
 async def startup_db_client():
     app.mongodb_client = AsyncIOMotorClient(settings.mongodb_connection_string)
     app.mongodb = app.mongodb_client.idea_list_db
+    app.mongodb.users = app.mongodb.users  # Add this line
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

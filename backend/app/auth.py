@@ -1,10 +1,13 @@
-# app/auth.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from pydantic import BaseModel
-from jose import jwt
+from jose import jwt, JWTError
+from datetime import datetime, timedelta
 import httpx
 from app.config import settings
+from app.models import User
+from motor.motor_asyncio import AsyncIOMotorClient
+from fastapi import Request
 
 router = APIRouter()
 
@@ -17,6 +20,43 @@ class Token(BaseModel):
     access_token: str
     token_type: str
 
+async def get_user_by_discord_id(db: AsyncIOMotorClient, discord_id: str):
+    user = await db.users.find_one({"discord_id": discord_id})
+    if user:
+        return User(**user)
+    return None
+
+async def create_or_update_user(db: AsyncIOMotorClient, user_data: dict):
+    user = await get_user_by_discord_id(db, user_data["id"])
+    if user:
+        # Update existing user
+        await db.users.update_one(
+            {"discord_id": user_data["id"]},
+            {"$set": {
+                "username": user_data["username"],
+                "email": user_data["email"],
+                "avatar": user_data.get("avatar")
+            }}
+        )
+    else:
+        # Create new user
+        new_user = User(
+            discord_id=user_data["id"],
+            username=user_data["username"],
+            email=user_data["email"],
+            avatar=user_data.get("avatar"),
+            is_approved=False  # New users are not approved by default
+        )
+        await db.users.insert_one(new_user.model_dump(by_alias=True))
+    return await get_user_by_discord_id(db, user_data["id"])
+
+def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=15)):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + expires_delta
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm="HS256")
+    return encoded_jwt
+
 @router.get("/login")
 async def login_discord():
     return {
@@ -24,7 +64,7 @@ async def login_discord():
     }
 
 @router.get("/callback")
-async def auth_callback(code: str):
+async def auth_callback(request: Request, code: str):
     data = {
         "client_id": settings.discord_client_id,
         "client_secret": settings.discord_client_secret,
@@ -54,12 +94,29 @@ async def auth_callback(code: str):
     
     user_data = response.json()
     
-    # Here you would typically create or update the user in your database
-    # and create a session or JWT token for your app
+    # Create or update user in the database
+    user = await create_or_update_user(request.app.mongodb, user_data)
     
-    return {"message": "Authentication successful", "user": user_data}
+    # Create access token for our app
+    access_token = create_access_token(
+        data={"sub": user.discord_id},
+        expires_delta=timedelta(minutes=30)
+    )
+    
+    return {"access_token": access_token, "token_type": "bearer"}
 
 @router.get("/me")
-async def read_users_me(token: str = Depends(oauth2_scheme)):
-    # Here you would typically validate the token and return the user info
-    return {"token": token}
+async def read_users_me(request: Request, token: str = Depends(oauth2_scheme)):
+    try:
+        payload = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
+        discord_id = payload.get("sub")
+        if discord_id is None:
+            raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+    
+    user = await get_user_by_discord_id(request.app.mongodb, discord_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return user
