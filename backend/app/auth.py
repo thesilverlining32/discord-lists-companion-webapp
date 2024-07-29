@@ -50,6 +50,24 @@ def create_access_token(data: Dict[str, Any], expires_delta: timedelta = timedel
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, settings.secret_key, algorithm="HS256")
 
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, settings.secret_key, algorithms=["HS256"])
+        discord_id: str = payload.get("sub")
+        if discord_id is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+    user = await get_user_by_discord_id(discord_id)
+    if user is None:
+        raise credentials_exception
+    return user
+
 @router.get("/login")
 async def login_discord():
     return {
@@ -113,3 +131,8 @@ async def read_users_me(request: Request, token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=404, detail="User not found")
     
     return user.to_dict()
+
+# Example protected route
+@router.get("/protected")
+async def protected_route(current_user: UserModel = Depends(get_current_user)):
+    return {"message": "This is a protected route", "user": current_user.to_dict()}
