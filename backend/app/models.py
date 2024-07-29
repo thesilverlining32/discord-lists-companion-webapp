@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field
 from typing import Optional
 from bson import ObjectId
 
@@ -17,14 +17,7 @@ class PyObjectId(ObjectId):
     def __get_pydantic_json_schema__(cls, field_schema):
         field_schema.update(type="string")
 
-class MongoBaseModel(BaseModel):
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True,
-        populate_by_name=True,
-        json_encoders={ObjectId: str}
-    )
-
-class UserModel(MongoBaseModel):
+class UserModel(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
     discord_id: str
     username: str
@@ -32,6 +25,12 @@ class UserModel(MongoBaseModel):
     avatar: Optional[str] = None
     is_admin: bool = False
     is_approved: bool = False
+
+    model_config = {
+        "populate_by_name": True,
+        "arbitrary_types_allowed": True,
+        "json_encoders": {ObjectId: str}
+    }
 
     @classmethod
     def from_mongo(cls, data: dict):
