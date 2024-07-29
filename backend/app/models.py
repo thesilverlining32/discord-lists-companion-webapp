@@ -39,7 +39,7 @@ class UserModel(BaseModel):
             return None
         data_cp = data.copy()
         data_cp["id"] = data_cp.pop("_id", None)
-        return cls.model_validate(data_cp)
+        return cls(**data_cp)
 
     def to_mongo(self):
         """Convert Pydantic model to MongoDB format."""

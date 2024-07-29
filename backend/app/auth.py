@@ -29,10 +29,12 @@ async def create_or_update_user(db: AsyncIOMotorClient, user_data: dict):
     user = await get_user_by_discord_id(db, user_data["id"])
     if user:
         # Update existing user
-        user.username = user_data["username"]
-        user.email = user_data["email"]
-        user.avatar = user_data.get("avatar")
-        await db.users.update_one({"discord_id": user_data["id"]}, {"$set": user.to_mongo()})
+        update_data = {
+            "username": user_data["username"],
+            "email": user_data["email"],
+            "avatar": user_data.get("avatar")
+        }
+        await db.users.update_one({"discord_id": user_data["id"]}, {"$set": update_data})
     else:
         # Create new user
         new_user = UserModel(
