@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Any
 from bson import ObjectId
 
 class PyObjectId(ObjectId):
@@ -14,15 +14,11 @@ class PyObjectId(ObjectId):
         return ObjectId(v)
 
     @classmethod
-    def __get_pydantic_core_schema__(cls, _source_type, _handler):
-        return {
-            'type': 'custom',
-            'typename': 'ObjectId',
-            'validator': lambda v: str(v),
-        }
+    def __get_pydantic_json_schema__(cls, field_schema: Any) -> None:
+        field_schema.update(type="string")
 
 class UserModel(BaseModel):
-    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
     discord_id: str
     username: str
     email: str
@@ -34,3 +30,18 @@ class UserModel(BaseModel):
         populate_by_name = True
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
+
+    @classmethod
+    def from_mongo(cls, data: dict):
+        """Convert MongoDB result to Pydantic model."""
+        if not data:
+            return None
+        id = data.pop('_id', None)
+        return cls(id=id, **data)
+
+    def to_mongo(self):
+        """Convert Pydantic model to MongoDB format."""
+        data = self.model_dump(by_alias=True, exclude_none=True)
+        if data.get("_id") is None:
+            data.pop("_id", None)
+        return data

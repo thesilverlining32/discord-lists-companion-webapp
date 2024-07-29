@@ -22,21 +22,17 @@ class Token(BaseModel):
 async def get_user_by_discord_id(db: AsyncIOMotorClient, discord_id: str):
     user = await db.users.find_one({"discord_id": discord_id})
     if user:
-        return UserModel(**user)
+        return UserModel.from_mongo(user)
     return None
 
 async def create_or_update_user(db: AsyncIOMotorClient, user_data: dict):
     user = await get_user_by_discord_id(db, user_data["id"])
     if user:
         # Update existing user
-        await db.users.update_one(
-            {"discord_id": user_data["id"]},
-            {"$set": {
-                "username": user_data["username"],
-                "email": user_data["email"],
-                "avatar": user_data.get("avatar")
-            }}
-        )
+        user.username = user_data["username"]
+        user.email = user_data["email"]
+        user.avatar = user_data.get("avatar")
+        await db.users.update_one({"discord_id": user_data["id"]}, {"$set": user.to_mongo()})
     else:
         # Create new user
         new_user = UserModel(
@@ -46,7 +42,7 @@ async def create_or_update_user(db: AsyncIOMotorClient, user_data: dict):
             avatar=user_data.get("avatar"),
             is_approved=False  # New users are not approved by default
         )
-        await db.users.insert_one(new_user.model_dump(by_alias=True, exclude_none=True))
+        await db.users.insert_one(new_user.to_mongo())
     return await get_user_by_discord_id(db, user_data["id"])
 
 def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=15)):
