@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2AuthorizationCodeBearer
-from pydantic import BaseModel
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
 import httpx
 from app.config import settings
 from app.models import UserModel
 from motor.motor_asyncio import AsyncIOMotorClient
+from typing import Dict, Any
 
 router = APIRouter()
 
@@ -15,17 +15,11 @@ oauth2_scheme = OAuth2AuthorizationCodeBearer(
     tokenUrl="https://discord.com/api/oauth2/token",
 )
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str
+async def get_user_by_discord_id(db: AsyncIOMotorClient, discord_id: str) -> Optional[UserModel]:
+    user_data = await db.users.find_one({"discord_id": discord_id})
+    return UserModel.from_mongo(user_data) if user_data else None
 
-async def get_user_by_discord_id(db: AsyncIOMotorClient, discord_id: str):
-    user = await db.users.find_one({"discord_id": discord_id})
-    if user:
-        return UserModel.from_mongo(user)
-    return None
-
-async def create_or_update_user(db: AsyncIOMotorClient, user_data: dict):
+async def create_or_update_user(db: AsyncIOMotorClient, user_data: Dict[str, Any]) -> UserModel:
     user = await get_user_by_discord_id(db, user_data["id"])
     if user:
         # Update existing user
@@ -35,24 +29,26 @@ async def create_or_update_user(db: AsyncIOMotorClient, user_data: dict):
             "avatar": user_data.get("avatar")
         }
         await db.users.update_one({"discord_id": user_data["id"]}, {"$set": update_data})
+        user.username = user_data["username"]
+        user.email = user_data["email"]
+        user.avatar = user_data.get("avatar")
     else:
         # Create new user
-        new_user = UserModel(
+        user = UserModel(
             discord_id=user_data["id"],
             username=user_data["username"],
             email=user_data["email"],
             avatar=user_data.get("avatar"),
             is_approved=False  # New users are not approved by default
         )
-        await db.users.insert_one(new_user.to_mongo())
-    return await get_user_by_discord_id(db, user_data["id"])
+        await db.users.insert_one(user.to_mongo())
+    return user
 
-def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=15)):
+def create_access_token(data: Dict[str, Any], expires_delta: timedelta = timedelta(minutes=15)) -> str:
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm="HS256")
-    return encoded_jwt
+    return jwt.encode(to_encode, settings.secret_key, algorithm="HS256")
 
 @router.get("/login")
 async def login_discord():
@@ -116,4 +112,4 @@ async def read_users_me(request: Request, token: str = Depends(oauth2_scheme)):
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     
-    return user
+    return user.to_dict()

@@ -1,49 +1,49 @@
-from pydantic import BaseModel, Field
-from typing import Optional
 from bson import ObjectId
+from typing import Optional, Dict, Any
 
-class PyObjectId(ObjectId):
-    @classmethod
-    def __get_validators__(cls):
-        yield cls.validate
-
-    @classmethod
-    def validate(cls, v):
-        if not ObjectId.is_valid(v):
-            raise ValueError("Invalid objectid")
-        return ObjectId(v)
-
-    @classmethod
-    def __get_pydantic_json_schema__(cls, field_schema):
-        field_schema.update(type="string")
-
-class UserModel(BaseModel):
-    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
-    discord_id: str
-    username: str
-    email: str
-    avatar: Optional[str] = None
-    is_admin: bool = False
-    is_approved: bool = False
-
-    model_config = {
-        "populate_by_name": True,
-        "arbitrary_types_allowed": True,
-        "json_encoders": {ObjectId: str}
-    }
+class UserModel:
+    def __init__(self, discord_id: str, username: str, email: str, avatar: Optional[str] = None, 
+                 is_admin: bool = False, is_approved: bool = False, _id: Optional[ObjectId] = None):
+        self._id = _id or ObjectId()
+        self.discord_id = discord_id
+        self.username = username
+        self.email = email
+        self.avatar = avatar
+        self.is_admin = is_admin
+        self.is_approved = is_approved
 
     @classmethod
-    def from_mongo(cls, data: dict):
-        """Convert MongoDB result to Pydantic model."""
+    def from_mongo(cls, data: Dict[str, Any]) -> Optional['UserModel']:
         if not data:
             return None
-        data_cp = data.copy()
-        data_cp["id"] = data_cp.pop("_id", None)
-        return cls(**data_cp)
+        return cls(
+            discord_id=data['discord_id'],
+            username=data['username'],
+            email=data['email'],
+            avatar=data.get('avatar'),
+            is_admin=data.get('is_admin', False),
+            is_approved=data.get('is_approved', False),
+            _id=data.get('_id')
+        )
 
-    def to_mongo(self):
-        """Convert Pydantic model to MongoDB format."""
-        data = self.model_dump(by_alias=True, exclude_none=True)
-        if data.get("_id") is None:
-            data.pop("_id", None)
-        return data
+    def to_mongo(self) -> Dict[str, Any]:
+        return {
+            '_id': self._id,
+            'discord_id': self.discord_id,
+            'username': self.username,
+            'email': self.email,
+            'avatar': self.avatar,
+            'is_admin': self.is_admin,
+            'is_approved': self.is_approved
+        }
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            'id': str(self._id),
+            'discord_id': self.discord_id,
+            'username': self.username,
+            'email': self.email,
+            'avatar': self.avatar,
+            'is_admin': self.is_admin,
+            'is_approved': self.is_approved
+        }
