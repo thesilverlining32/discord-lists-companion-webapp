@@ -6,7 +6,7 @@ import httpx
 from app.config import settings
 from app.models import UserModel
 from motor.motor_asyncio import AsyncIOMotorClient
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 router = APIRouter()
 
