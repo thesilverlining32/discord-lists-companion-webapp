@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import Optional, Any
+from pydantic import BaseModel, Field, ConfigDict
+from typing import Optional
 from bson import ObjectId
 
 class PyObjectId(ObjectId):
@@ -14,10 +14,17 @@ class PyObjectId(ObjectId):
         return ObjectId(v)
 
     @classmethod
-    def __get_pydantic_json_schema__(cls, field_schema: Any) -> None:
+    def __get_pydantic_json_schema__(cls, field_schema):
         field_schema.update(type="string")
 
-class UserModel(BaseModel):
+class MongoBaseModel(BaseModel):
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        populate_by_name=True,
+        json_encoders={ObjectId: str}
+    )
+
+class UserModel(MongoBaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
     discord_id: str
     username: str
@@ -26,18 +33,14 @@ class UserModel(BaseModel):
     is_admin: bool = False
     is_approved: bool = False
 
-    class Config:
-        populate_by_name = True
-        arbitrary_types_allowed = True
-        json_encoders = {ObjectId: str}
-
     @classmethod
     def from_mongo(cls, data: dict):
         """Convert MongoDB result to Pydantic model."""
         if not data:
             return None
-        id = data.pop('_id', None)
-        return cls(id=id, **data)
+        data_cp = data.copy()
+        data_cp["id"] = data_cp.pop("_id", None)
+        return cls.model_validate(data_cp)
 
     def to_mongo(self):
         """Convert Pydantic model to MongoDB format."""
