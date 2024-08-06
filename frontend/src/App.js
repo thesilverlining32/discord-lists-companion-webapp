@@ -1,44 +1,37 @@
+// src/Auth.js
+
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch, Link } from 'react-router-dom';
-import Login from './components/Login';
-import Protected from './components/Protected';
-import Callback from './components/Callback';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { UserProvider } from './contexts/UserContext';
+import Header from './components/Layout/Header';
+import Footer from './components/Layout/Footer';
+import Home from './pages/Home';
+import Dashboard from './pages/Dashboard';
+import Profile from './pages/Profile';
+import Login from './components/Auth/Login';
+import AuthCallback from './components/Auth/AuthCallback';
+import ProtectedRoute from './components/Auth/ProtectedRoute';
 
-function App() {
+const App = () => {
   return (
-    <Router>
-      <div>
-        <nav>
-          <ul>
-            <li>
-              <Link to="/">Home</Link>
-            </li>
-            <li>
-              <Link to="/login">Login</Link>
-            </li>
-            <li>
-              <Link to="/protected">Protected Route</Link>
-            </li>
-          </ul>
-        </nav>
-
-        <Switch>
-          <Route path="/login">
-            <Login />
-          </Route>
-          <Route path="/protected">
-            <Protected />
-          </Route>
-          <Route path="/">
-            <h1>Welcome to Idea List App</h1>
-          </Route>
-          <Route path="/callback">
-            <Callback />
-          </Route>
-        </Switch>
-      </div>
-    </Router>
+    <UserProvider>
+      <Router>
+        <div className="app">
+          <Header />
+          <main>
+            <Switch>
+              <Route exact path="/" component={Home} />
+              <Route path="/login" component={Login} />
+              <Route path="/auth/callback" component={AuthCallback} />
+              <ProtectedRoute path="/dashboard" component={Dashboard} />
+              <ProtectedRoute path="/profile" component={Profile} />
+            </Switch>
+          </main>
+          <Footer />
+        </div>
+      </Router>
+    </UserProvider>
   );
-}
+};
 
 export default App;
