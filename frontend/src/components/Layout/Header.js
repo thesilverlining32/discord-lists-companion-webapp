@@ -1,9 +1,17 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 import { useUser } from '../../contexts/UserContext';
+import { logout } from '../../services/auth';
 
 const Header = () => {
-  const { user, loading } = useUser();
+  const { user, setUser, loading } = useUser();
+  const history = useHistory();
+
+  const handleLogout = () => {
+    logout();
+    setUser(null);
+    history.push('/');
+  };
 
   return (
     <header>
@@ -15,7 +23,7 @@ const Header = () => {
               <>
                 <li><Link to="/dashboard">Dashboard</Link></li>
                 <li><Link to="/profile">Profile</Link></li>
-                <li><button onClick={() => {/* Implement logout */}}>Logout</button></li>
+                <li><button onClick={handleLogout}>Logout</button></li>
               </>
             ) : (
               <li><Link to="/login">Login</Link></li>
