@@ -70,9 +70,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 
 @router.get("/login")
 async def login_discord():
-    return {
-        "url": f"https://discord.com/api/oauth2/authorize?client_id={settings.discord_client_id}&redirect_uri={settings.discord_redirect_uri}&response_type=code&scope=identify%20email"
-    }
+    login_url = f"https://discord.com/api/oauth2/authorize?client_id={settings.discord_client_id}&redirect_uri={settings.discord_redirect_uri}&response_type=code&scope=identify%20email"
+    print(f"Generated Discord login URL: {login_url}")
+    return {"url": login_url}
 
 @router.get("/callback")
 async def auth_callback(request: Request, code: str):
