@@ -1,7 +1,7 @@
-// src/Auth.js
+// src/App.js
 
 import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { UserProvider } from './contexts/UserContext';
 import Header from './components/Layout/Header';
 import Footer from './components/Layout/Footer';
@@ -19,13 +19,13 @@ const App = () => {
         <div className="app">
           <Header />
           <main>
-            <Switch>
-              <Route exact path="/" component={Home} />
-              <Route path="/login" component={Login} />
-              <Route path="/auth/callback" component={AuthCallback} />
-              <ProtectedRoute path="/dashboard" component={Dashboard} />
-              <ProtectedRoute path="/profile" component={Profile} />
-            </Switch>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            </Routes>
           </main>
           <Footer />
         </div>
