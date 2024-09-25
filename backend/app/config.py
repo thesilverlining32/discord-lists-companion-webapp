@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     omdb_api_key: str
 
     class Config:
-        env_file = "../../.env"
+        env_file = "../.env"
 
     @property
     def mongodb_connection_string(self):
