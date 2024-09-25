@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     mongo_initdb_root_username: str
     mongo_initdb_root_password: str
     omdb_api_key: str
+    react_app_api_url: str
+    react_app_frontend_url: str
 
     class Config:
         env_file = "../.env"

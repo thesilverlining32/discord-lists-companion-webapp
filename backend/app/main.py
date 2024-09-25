@@ -10,7 +10,7 @@ app.include_router(auth_router, prefix="/auth", tags=["auth"])
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://discord-app-backend.ggior32.dev/*", "https://discord-app.ggior32.dev/*", "https://discord.com/*"],  # Add your frontend URL
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
