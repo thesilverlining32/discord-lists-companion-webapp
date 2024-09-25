@@ -13,6 +13,10 @@ RUN npm install
 # Copy the current directory contents into the container
 COPY . .
 
+# Add this line to create a .env file with the API_URL
+ARG REACT_APP_API_URL
+RUN echo "REACT_APP_API_URL=$REACT_APP_API_URL" > .env
+
 # Build the app
 RUN npm run build
 

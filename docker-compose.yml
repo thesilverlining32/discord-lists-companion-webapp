@@ -16,7 +16,10 @@ services:
       - OMDB_API_KEY=${OMDB_API_KEY}
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        - REACT_APP_API_URL=${REACT_APP_API_URL}
     ports:
       - "3000:3000"
     environment:
