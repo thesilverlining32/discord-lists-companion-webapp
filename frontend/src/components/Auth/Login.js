@@ -1,15 +1,18 @@
 // src/components/Auth/Login.js
 
-import React from 'react';
+import React, { useState } from 'react';
 import { loginWithDiscord } from '../../services/auth';
 
 const Login = () => {
+  const [error, setError] = useState(null);
+
   const handleLogin = async () => {
     try {
+      setError(null);
       await loginWithDiscord();
     } catch (error) {
       console.error('Login failed:', error);
-      // Handle error (e.g., show an error message to the user)
+      setError('Failed to initiate login. Please try again.');
     }
   };
 
@@ -17,6 +20,7 @@ const Login = () => {
     <div>
       <h2>Login</h2>
       <button onClick={handleLogin}>Login with Discord</button>
+      {error && <p style={{color: 'red'}}>{error}</p>}
     </div>
   );
 };
