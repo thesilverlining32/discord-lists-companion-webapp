@@ -5,8 +5,14 @@ const API_URL = process.env.REACT_APP_API_URL;
 
 export const loginWithDiscord = async () => {
   try {
+    console.log('Attempting to login with Discord');
     const response = await axios.get(`${API_URL}/auth/login`);
-    window.location.href = response.data.url;
+    console.log('Login response:', response.data);
+    if (response.data && response.data.url) {
+      window.location.href = response.data.url;
+    } else {
+      throw new Error('Invalid response from server');
+    }
   } catch (error) {
     console.error('Error initiating Discord login:', error);
     throw error;
