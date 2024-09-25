@@ -1,4 +1,5 @@
 // src/services/auth.js
+
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -6,7 +7,7 @@ const API_URL = process.env.REACT_APP_API_URL;
 export const loginWithDiscord = async () => {
   try {
     console.log('Attempting to login with Discord');
-    console.log(`${API_URL}/auth/login`);
+    console.log('API URL:', API_URL);
     const response = await axios.get(`${API_URL}/auth/login`);
     console.log('Login response:', response.data);
     if (response.data && response.data.url) {
