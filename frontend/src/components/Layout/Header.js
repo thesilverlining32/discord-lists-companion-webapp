@@ -1,16 +1,18 @@
+// src/components/Layout/Header.js
+
 import React from 'react';
-import { Link, useHistory } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '../../contexts/UserContext';
 import { logout } from '../../services/auth';
 
 const Header = () => {
   const { user, setUser, loading } = useUser();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     logout();
     setUser(null);
-    history.push('/');
+    navigate('/');
   };
 
   return (
