@@ -1,6 +1,7 @@
 from bson import ObjectId
 from typing import Optional, Dict, Any, List
 from pydantic import BaseModel, Field, ConfigDict
+from pydantic_core import core_schema
 
 class PyObjectId(ObjectId):
     @classmethod
@@ -14,8 +15,12 @@ class PyObjectId(ObjectId):
         return ObjectId(v)
 
     @classmethod
-    def __modify_schema__(cls, field_schema):
-        field_schema.update(type="string")
+    def __get_pydantic_core_schema__(cls, _source_type, _handler):
+        return core_schema.json_or_python_schema(
+            json_schema=core_schema.str_schema(),
+            python_schema=core_schema.is_instance_schema(ObjectId),
+            serialization=core_schema.to_string_serializer(),
+        )
 
 class UserModel(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
