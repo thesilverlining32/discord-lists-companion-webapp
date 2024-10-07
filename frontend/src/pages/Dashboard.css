@@ -1,0 +1,87 @@
+.dashboard {
+	max-width: 800px;
+	margin: 0 auto;
+	padding: 20px;
+  }
+
+  .dashboard h1 {
+	font-size: 2em;
+	color: #333;
+	margin-bottom: 20px;
+  }
+
+  .dashboard-content {
+	display: flex;
+	gap: 20px;
+  }
+
+  .my-lists, .recent-activity {
+	flex: 1;
+	background-color: #f9f9f9;
+	border-radius: 8px;
+	padding: 15px;
+	box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .my-lists h2, .recent-activity h2 {
+	font-size: 1.5em;
+	color: #444;
+	margin-bottom: 15px;
+  }
+
+  .my-lists ul, .recent-activity ul {
+	list-style-type: none;
+	padding: 0;
+  }
+
+  .my-lists li, .recent-activity li {
+	margin-bottom: 10px;
+  }
+
+  .my-lists a {
+	color: #0066cc;
+	text-decoration: none;
+  }
+
+  .my-lists a:hover {
+	text-decoration: underline;
+  }
+
+  .btn {
+	display: inline-block;
+	padding: 10px 15px;
+	margin-top: 15px;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+	text-decoration: none;
+	font-weight: bold;
+	transition: background-color 0.3s ease;
+  }
+
+  .btn-primary {
+	background-color: #0066cc;
+	color: white;
+  }
+
+  .btn-secondary {
+	background-color: #f0f0f0;
+	color: #333;
+  }
+
+  .btn:hover {
+	opacity: 0.9;
+  }
+
+  .loading {
+	text-align: center;
+	font-size: 1.2em;
+	color: #666;
+	margin-top: 50px;
+  }
+
+  @media (max-width: 600px) {
+	.dashboard-content {
+	  flex-direction: column;
+	}
+  }
