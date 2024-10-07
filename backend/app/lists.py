@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
 from typing import List
@@ -9,21 +9,18 @@ from app.config import settings
 router = APIRouter()
 
 # Helper function to get database connection
-async def get_database():
-    client = AsyncIOMotorClient(settings.mongodb_connection_string)
-    return client.idea_list_db
+async def get_database(request: Request):
+    return request.app.mongodb
 
-# Lists CRUD operations
-
-@router.post("/lists", response_model=ListModel)
-async def create_list(list_data: ListModel, current_user: UserModel = Depends(get_current_user), db: AsyncIOMotorClient = Depends(get_database)):
+@router.get("/lists", response_model=List[ListModel])
+async def get_user_lists(request: Request, current_user: UserModel = Depends(get_current_user)):
     if not current_user.is_approved:
-        raise HTTPException(status_code=403, detail="User is not approved to create lists")
+        raise HTTPException(status_code=403, detail="User is not approved to view lists")
     
-    list_data.owner_id = current_user.discord_id
-    result = await db.lists.insert_one(list_data.dict(exclude={"id"}))
-    created_list = await db.lists.find_one({"_id": result.inserted_id})
-    return ListModel(**created_list)
+    db = await get_database(request)
+    cursor = db.lists.find({"owner_id": str(current_user.id)})
+    lists = await cursor.to_list(length=None)
+    return [ListModel(**list_data) for list_data in lists]
 
 @router.get("/lists", response_model=List[ListModel])
 async def get_user_lists(current_user: UserModel = Depends(get_current_user), db: AsyncIOMotorClient = Depends(get_database)):

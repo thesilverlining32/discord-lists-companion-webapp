@@ -52,7 +52,7 @@ def create_access_token(data: Dict[str, Any], expires_delta: timedelta = timedel
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, settings.secret_key, algorithm="HS256")
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(token: str = Depends(oauth2_scheme), request: Request = None):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -65,7 +65,12 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    user = await get_user_by_discord_id(discord_id)
+    
+    db = request.app.mongodb if request else None
+    if not db:
+        raise HTTPException(status_code=500, detail="Database connection not available")
+    
+    user = await get_user_by_discord_id(db, discord_id)
     if user is None:
         raise credentials_exception
     return user
