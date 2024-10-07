@@ -16,11 +16,10 @@ class PyObjectId(ObjectId):
 
     @classmethod
     def __get_pydantic_core_schema__(cls, _source_type, _handler):
-        return core_schema.json_or_python_schema(
-            json_schema=core_schema.str_schema(),
-            python_schema=core_schema.is_instance_schema(ObjectId),
-            serialization=core_schema.to_string_serializer(),
-        )
+        return core_schema.union_schema([
+            core_schema.str_schema(),
+            core_schema.is_instance_schema(ObjectId),
+        ])
 
 class UserModel(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
@@ -35,7 +34,7 @@ class UserModel(BaseModel):
         populate_by_name=True,
         arbitrary_types_allowed=True,
         json_encoders={ObjectId: str},
-        use_enum_values=True
+        from_attributes=True
     )
 
     @classmethod
@@ -61,7 +60,7 @@ class ListModel(BaseModel):
         populate_by_name=True,
         arbitrary_types_allowed=True,
         json_encoders={ObjectId: str},
-        use_enum_values=True
+        from_attributes=True
     )
 
 class ListItemModel(BaseModel):
@@ -78,5 +77,5 @@ class ListItemModel(BaseModel):
         populate_by_name=True,
         arbitrary_types_allowed=True,
         json_encoders={ObjectId: str},
-        use_enum_values=True
+        from_attributes=True
     )
