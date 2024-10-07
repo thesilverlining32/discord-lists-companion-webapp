@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2AuthorizationCodeBearer
+from fastapi.responses import RedirectResponse
+from app.config import settings
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
 import httpx
@@ -114,7 +116,11 @@ async def auth_callback(request: Request, code: str):
         expires_delta=timedelta(minutes=30)
     )
     
-    return {"access_token": access_token, "token_type": "bearer"}
+    # After creating the access token
+    frontend_url = settings.react_app_frontend_url
+    redirect_url = f"{frontend_url}/auth/callback?token={access_token}"
+    
+    return RedirectResponse(url=redirect_url)
 
 @router.get("/me")
 async def read_users_me(request: Request, token: str = Depends(oauth2_scheme)):
