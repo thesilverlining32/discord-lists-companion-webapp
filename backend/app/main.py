@@ -2,11 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from app.auth import router as auth_router
+from app.lists import router as lists_router
 from app.config import settings
 
 app = FastAPI()
 
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
+app.include_router(lists_router, prefix="/api", tags=["lists"])
 
 app.add_middleware(
     CORSMiddleware,
