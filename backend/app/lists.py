@@ -8,22 +8,15 @@ from app.config import settings
 
 router = APIRouter()
 
-# Helper function to get database connection
-async def get_database(request: Request):
+async def get_database(request: Request) -> AsyncIOMotorClient:
     return request.app.mongodb
 
 @router.get("/lists", response_model=List[ListModel])
-async def get_user_lists(request: Request, current_user: UserModel = Depends(get_current_user)):
-    if not current_user.is_approved:
-        raise HTTPException(status_code=403, detail="User is not approved to view lists")
-    
-    db = await get_database(request)
-    cursor = db.lists.find({"owner_id": str(current_user.id)})
-    lists = await cursor.to_list(length=None)
-    return [ListModel(**list_data) for list_data in lists]
-
-@router.get("/lists", response_model=List[ListModel])
-async def get_user_lists(current_user: UserModel = Depends(get_current_user), db: AsyncIOMotorClient = Depends(get_database)):
+async def get_user_lists(
+    request: Request,
+    current_user: UserModel = Depends(get_current_user),
+    db: AsyncIOMotorClient = Depends(get_database)
+):
     if not current_user.is_approved:
         raise HTTPException(status_code=403, detail="User is not approved to view lists")
     

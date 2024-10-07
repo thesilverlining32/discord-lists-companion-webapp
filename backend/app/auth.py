@@ -5,7 +5,6 @@ from app.config import settings
 from jose import jwt, JWTError
 from datetime import datetime, timedelta
 import httpx
-from app.config import settings
 from app.models import UserModel
 from motor.motor_asyncio import AsyncIOMotorClient
 from typing import Dict, Any, Optional
@@ -66,10 +65,10 @@ async def get_current_user(token: str = Depends(oauth2_scheme), request: Request
     except JWTError:
         raise credentials_exception
     
-    db = request.app.mongodb if request else None
-    if not db:
+    if request is None or not hasattr(request, 'app') or not hasattr(request.app, 'mongodb'):
         raise HTTPException(status_code=500, detail="Database connection not available")
     
+    db = request.app.mongodb
     user = await get_user_by_discord_id(db, discord_id)
     if user is None:
         raise credentials_exception
