@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useUser } from '../../contexts/UserContext';
-import { getLists } from '../../services/api';
+import { useUser } from '../contexts/UserContext';
+import { getLists } from '../services/api';
 import './Dashboard.css';
 
 const Dashboard = () => {
