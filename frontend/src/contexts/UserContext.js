@@ -1,3 +1,5 @@
+// src/contexts/UserContext.js
+
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { getCurrentUser } from '../services/auth';
 
