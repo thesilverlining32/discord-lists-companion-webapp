@@ -8,7 +8,7 @@ from app.config import settings
 app = FastAPI()
 
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
-app.include_router(lists_router, prefix="/api", tags=["lists"])
+app.include_router(lists_router, tags=["lists"])  # Note: No prefix here
 
 app.add_middleware(
     CORSMiddleware,

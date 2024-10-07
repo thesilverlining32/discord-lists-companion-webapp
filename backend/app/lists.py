@@ -26,11 +26,12 @@ async def create_list(list_data: ListModel, current_user: UserModel = Depends(ge
     return ListModel(**created_list)
 
 @router.get("/lists", response_model=List[ListModel])
-async def get_lists(current_user: UserModel = Depends(get_current_user), db: AsyncIOMotorClient = Depends(get_database)):
+async def get_user_lists(current_user: UserModel = Depends(get_current_user), db: AsyncIOMotorClient = Depends(get_database)):
     if not current_user.is_approved:
         raise HTTPException(status_code=403, detail="User is not approved to view lists")
     
-    lists = await db.lists.find({"owner_id": current_user.discord_id}).to_list(length=None)
+    cursor = db.lists.find({"owner_id": str(current_user.id)})
+    lists = await cursor.to_list(length=None)
     return [ListModel(**list_data) for list_data in lists]
 
 @router.get("/lists/{list_id}", response_model=ListModel)
