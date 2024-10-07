@@ -3,11 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { handleAuthCallback } from '../../services/auth';
+import { useUser } from '../../contexts/UserContext';
 
 const AuthCallback = () => {
   const [error, setError] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const { setUser } = useUser();
 
   useEffect(() => {
     const code = new URLSearchParams(location.search).get('code');
@@ -15,6 +17,9 @@ const AuthCallback = () => {
       handleAuthCallback(code)
         .then(data => {
           localStorage.setItem('token', data.access_token);
+          // Fetch user data here and update the user context
+          // For now, we'll just set a simple user object
+          setUser({ isLoggedIn: true });
           navigate('/dashboard');
         })
         .catch(err => {
@@ -22,7 +27,7 @@ const AuthCallback = () => {
           setError('Authentication failed. Please try again.');
         });
     }
-  }, [location, navigate]);
+  }, [location, navigate, setUser]);
 
   if (error) {
     return <div>{error}</div>;
