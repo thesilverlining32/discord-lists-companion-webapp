@@ -9,8 +9,8 @@ import Profile from './pages/Profile';
 import Login from './components/Auth/Login';
 import AuthCallback from './components/Auth/AuthCallback';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
-import ListsPage from './pages/ListsPage';
-import ListItemPage from './pages/ListItemPage';
+import Lists from './components/Lists/Lists';
+import ListItems from './components/Lists/ListItems';
 import './App.css';
 
 const App = () => {
@@ -26,8 +26,8 @@ const App = () => {
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/lists" element={<ProtectedRoute><ListsPage /></ProtectedRoute>} />
-              <Route path="/list/:listId" element={<ProtectedRoute><ListItemPage /></ProtectedRoute>} />
+              <Route path="/lists" element={<ProtectedRoute><Lists /></ProtectedRoute>} />
+              <Route path="/lists/:listId" element={<ProtectedRoute><ListItems /></ProtectedRoute>} />
             </Routes>
           </main>
           <Footer />
