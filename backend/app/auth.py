@@ -136,9 +136,9 @@ async def read_users_me(request: Request, token: str = Depends(oauth2_scheme)):
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     
-    return user.to_dict()
+    return user.model_dump(exclude={"id"})
 
 # Example protected route
 @router.get("/protected")
 async def protected_route(current_user: UserModel = Depends(get_current_user)):
-    return {"message": "This is a protected route", "user": current_user.to_dict()}
+    return {"message": "This is a protected route", "user": current_user.model_dump(exclude={"id"})}
