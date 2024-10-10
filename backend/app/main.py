@@ -4,22 +4,28 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from app.auth import router as auth_router
 from app.lists import router as lists_router
 from app.config import settings
+import logging
 
 app = FastAPI()
 
-app.include_router(auth_router, prefix="/auth", tags=["auth"])
-app.include_router(lists_router, tags=["lists"])
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# CORS configuration using environment variables
-origins = settings.cors_origins
+# Log the CORS origins
+logger.info(f"CORS Origins: {settings.cors_origins}")
 
+# CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(auth_router, prefix="/auth", tags=["auth"])
+app.include_router(lists_router, tags=["lists"])
 
 @app.on_event("startup")
 async def startup_db_client():

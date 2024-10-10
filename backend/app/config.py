@@ -1,6 +1,5 @@
 from pydantic_settings import BaseSettings
 from typing import List
-from urllib.parse import urlparse
 
 class Settings(BaseSettings):
     mongodb_url: str
@@ -23,11 +22,7 @@ class Settings(BaseSettings):
 
     @property
     def cors_origins(self) -> List[str]:
-        origins = [self.react_app_frontend_url]
-        api_origin = urlparse(self.react_app_api_url).netloc
-        if api_origin not in origins:
-            origins.append(f"http://{api_origin}")
-            origins.append(f"https://{api_origin}")
-        return origins
+        # Using a list comprehension to create a list with one item
+        return [self.react_app_frontend_url]
 
 settings = Settings()
