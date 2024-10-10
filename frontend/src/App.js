@@ -10,7 +10,7 @@ import Login from './components/Auth/Login';
 import AuthCallback from './components/Auth/AuthCallback';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import Lists from './components/Lists/Lists';
-import ListItems from './components/Lists/ListItems';
+import ListDetail from './components/Lists/ListDetail';
 import './App.css';
 
 const App = () => {
@@ -27,7 +27,7 @@ const App = () => {
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/lists" element={<ProtectedRoute><Lists /></ProtectedRoute>} />
-              <Route path="/lists/:listId" element={<ProtectedRoute><ListItems /></ProtectedRoute>} />
+              <Route path="/lists/:listId" element={<ProtectedRoute><ListDetail /></ProtectedRoute>} />
             </Routes>
           </main>
           <Footer />
