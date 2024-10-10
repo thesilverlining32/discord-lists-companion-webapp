@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from typing import List
 
 class Settings(BaseSettings):
     mongodb_url: str
@@ -11,6 +12,7 @@ class Settings(BaseSettings):
     omdb_api_key: str
     react_app_api_url: str
     react_app_frontend_url: str
+    cors_origins: List[str] = [react_app_api_url, react_app_frontend_url]
 
     class Config:
         env_file = "../.env"
