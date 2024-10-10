@@ -26,13 +26,23 @@ async def create_list(
     return ListModel(**created_list)
 
 @router.get("/lists/{list_id}", response_model=ListModel)
-async def get_list(list_id: str, current_user: UserModel = Depends(get_current_user), db: AsyncIOMotorClient = Depends(get_database)):
+async def get_list(
+    list_id: str,
+    current_user: UserModel = Depends(get_current_user),
+    db: AsyncIOMotorClient = Depends(get_database)
+):
     if not current_user.is_approved:
         raise HTTPException(status_code=403, detail="User is not approved to view lists")
     
-    list_data = await db.lists.find_one({"_id": ObjectId(list_id), "owner_id": current_user.discord_id})
+    list_data = await db.lists.find_one({"_id": ObjectId(list_id), "owner_id": str(current_user.id)})
     if list_data is None:
         raise HTTPException(status_code=404, detail="List not found")
+    
+    # Fetch items for this list
+    items_cursor = db.list_items.find({"list_id": str(list_id)})
+    items = await items_cursor.to_list(length=None)
+    
+    list_data['items'] = items
     return ListModel(**list_data)
 
 @router.put("/lists/{list_id}", response_model=ListModel)
