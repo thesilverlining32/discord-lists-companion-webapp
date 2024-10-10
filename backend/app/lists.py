@@ -11,6 +11,18 @@ router = APIRouter()
 async def get_database(request: Request) -> AsyncIOMotorClient:
     return request.app.mongodb
 
+@router.get("/lists", response_model=List[ListModel])
+async def get_user_lists(
+    current_user: UserModel = Depends(get_current_user),
+    db: AsyncIOMotorClient = Depends(get_database)
+):
+    if not current_user.is_approved:
+        raise HTTPException(status_code=403, detail="User is not approved to view lists")
+    
+    cursor = db.lists.find({"owner_id": str(current_user.id)})
+    lists = await cursor.to_list(length=None)
+    return [ListModel(**list_data) for list_data in lists]
+
 @router.post("/lists", response_model=ListModel)
 async def create_list(
     list_data: ListModel,
@@ -24,26 +36,6 @@ async def create_list(
     result = await db.lists.insert_one(list_data.dict(exclude={"id"}))
     created_list = await db.lists.find_one({"_id": result.inserted_id})
     return ListModel(**created_list)
-
-@router.get("/lists/{list_id}", response_model=ListModel)
-async def get_list(
-    list_id: str,
-    current_user: UserModel = Depends(get_current_user),
-    db: AsyncIOMotorClient = Depends(get_database)
-):
-    if not current_user.is_approved:
-        raise HTTPException(status_code=403, detail="User is not approved to view lists")
-    
-    list_data = await db.lists.find_one({"_id": ObjectId(list_id), "owner_id": str(current_user.id)})
-    if list_data is None:
-        raise HTTPException(status_code=404, detail="List not found")
-    
-    # Fetch items for this list
-    items_cursor = db.list_items.find({"list_id": str(list_id)})
-    items = await items_cursor.to_list(length=None)
-    
-    list_data['items'] = items
-    return ListModel(**list_data)
 
 @router.put("/lists/{list_id}", response_model=ListModel)
 async def update_list(list_id: str, list_data: ListModel, current_user: UserModel = Depends(get_current_user), db: AsyncIOMotorClient = Depends(get_database)):
