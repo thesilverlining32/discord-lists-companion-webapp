@@ -11,18 +11,19 @@ router = APIRouter()
 async def get_database(request: Request) -> AsyncIOMotorClient:
     return request.app.mongodb
 
-@router.get("/lists", response_model=List[ListModel])
-async def get_user_lists(
-    request: Request,
+@router.post("/lists", response_model=ListModel)
+async def create_list(
+    list_data: ListModel,
     current_user: UserModel = Depends(get_current_user),
     db: AsyncIOMotorClient = Depends(get_database)
 ):
     if not current_user.is_approved:
-        raise HTTPException(status_code=403, detail="User is not approved to view lists")
+        raise HTTPException(status_code=403, detail="User is not approved to create lists")
     
-    cursor = db.lists.find({"owner_id": str(current_user.id)})
-    lists = await cursor.to_list(length=None)
-    return [ListModel(**list_data) for list_data in lists]
+    list_data.owner_id = str(current_user.id)
+    result = await db.lists.insert_one(list_data.dict(exclude={"id"}))
+    created_list = await db.lists.find_one({"_id": result.inserted_id})
+    return ListModel(**created_list)
 
 @router.get("/lists/{list_id}", response_model=ListModel)
 async def get_list(list_id: str, current_user: UserModel = Depends(get_current_user), db: AsyncIOMotorClient = Depends(get_database)):
