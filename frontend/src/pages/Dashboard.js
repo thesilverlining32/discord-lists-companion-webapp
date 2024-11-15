@@ -1,3 +1,4 @@
+// src/pages/Dashboard.js
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
@@ -18,36 +19,49 @@ const Dashboard = () => {
     try {
       setIsLoading(true);
       const response = await getLists();
+      console.log('Fetched lists:', response.data); // Debug log
       setLists(response.data);
       setError(null);
     } catch (err) {
-      setError('Failed to fetch lists. Please try again.');
       console.error('Error fetching lists:', err);
+      setError('Failed to fetch lists. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div className="error-message">{error}</div>;
+  if (isLoading) return <div className="dashboard-loading">Loading...</div>;
+  if (error) return <div className="dashboard-error">{error}</div>;
 
   return (
     <div className="dashboard">
       <h1>Welcome, {user.username}!</h1>
+
       <section className="my-lists">
-        <h2>My Lists</h2>
+        <div className="section-header">
+          <h2>My Lists</h2>
+          <Link to="/lists/new" className="btn btn-primary">Create New List</Link>
+        </div>
+
         {lists.length === 0 ? (
-          <p>You don't have any lists yet. Create one to get started!</p>
+          <div className="no-lists">
+            <p>You don't have any lists yet.</p>
+          </div>
         ) : (
-          <ul>
+          <ul className="lists-grid">
             {lists.map(list => (
-              <li key={list.id}>
-                <Link to={`/list/${list.id}`}>{list.name}</Link>
+              <li key={list._id} className="list-card">
+                <Link to={`/lists/${list._id}`} className="list-link">
+                  <h3>{list.name}</h3>
+                  {list.description && <p>{list.description}</p>}
+                  <span className="item-count">
+                    {list.items?.length || 0} items
+                  </span>
+                </Link>
               </li>
             ))}
           </ul>
         )}
-        <Link to="/lists/new" className="btn btn-primary">Create New List</Link>
       </section>
     </div>
   );
