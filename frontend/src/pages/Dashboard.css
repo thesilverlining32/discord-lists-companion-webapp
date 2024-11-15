@@ -2,30 +2,30 @@
 	max-width: 1200px;
 	margin: 0 auto;
 	padding: 2rem;
-  }
+}
 
-  .dashboard-header {
+.dashboard-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	margin-bottom: 3rem;
 	padding-bottom: 1.5rem;
 	border-bottom: 1px solid #eaeaea;
-  }
+}
 
-  .welcome-section h1 {
+.welcome-section h1 {
 	font-size: 2rem;
 	color: #2c3e50;
 	margin: 0;
 	margin-bottom: 0.5rem;
-  }
+}
 
-  .subtitle {
+.subtitle {
 	color: #666;
 	margin: 0;
-  }
+}
 
-  .create-list-btn {
+.create-list-btn {
 	display: inline-flex;
 	align-items: center;
 	gap: 0.5rem;
@@ -36,35 +36,35 @@
 	text-decoration: none;
 	font-weight: 500;
 	transition: all 0.2s ease;
-  }
+}
 
-  .create-list-btn:hover {
+.create-list-btn:hover {
 	background-color: #0052a3;
 	transform: translateY(-1px);
-  }
+}
 
-  .btn-icon {
+.btn-icon {
 	font-size: 1.2rem;
 	font-weight: bold;
-  }
+}
 
-  .lists-section {
+.lists-section {
 	margin-top: 2rem;
-  }
+}
 
-  .lists-section h2 {
+.lists-section h2 {
 	font-size: 1.5rem;
 	color: #2c3e50;
 	margin-bottom: 1.5rem;
-  }
+}
 
-  .lists-grid {
+.lists-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 	gap: 1.5rem;
-  }
+}
 
-  .list-card {
+.list-card {
 	background: white;
 	border-radius: 12px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -73,26 +73,26 @@
 	color: inherit;
 	border: 1px solid #eaeaea;
 	overflow: hidden;
-  }
+}
 
-  .list-card:hover {
+.list-card:hover {
 	transform: translateY(-4px);
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 	border-color: #0066cc;
-  }
+}
 
-  .list-card-content {
+.list-card-content {
 	padding: 1.5rem;
-  }
+}
 
-  .list-title {
+.list-title {
 	font-size: 1.25rem;
 	color: #2c3e50;
 	margin: 0;
 	margin-bottom: 0.5rem;
-  }
+}
 
-  .list-description {
+.list-description {
 	color: #666;
 	font-size: 0.9rem;
 	line-height: 1.5;
@@ -102,92 +102,92 @@
 	-webkit-line-clamp: 2;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
-  }
+}
 
-  .list-meta {
+.list-meta {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	margin-top: auto;
 	padding-top: 1rem;
 	border-top: 1px solid #eaeaea;
-  }
+}
 
-  .item-count {
+.item-count {
 	background: #f5f7fa;
 	padding: 0.25rem 0.75rem;
 	border-radius: 1rem;
 	font-size: 0.875rem;
 	color: #666;
-  }
+}
 
-  .view-details {
+.view-details {
 	color: #0066cc;
 	font-size: 0.875rem;
 	font-weight: 500;
-  }
+}
 
-  .empty-state {
+.empty-state {
 	text-align: center;
 	padding: 4rem 2rem;
 	background: #f8fafc;
 	border-radius: 12px;
 	border: 2px dashed #e2e8f0;
-  }
+}
 
-  .empty-state-icon {
+.empty-state-icon {
 	font-size: 3rem;
 	margin-bottom: 1rem;
-  }
+}
 
-  .empty-state h3 {
+.empty-state h3 {
 	color: #2c3e50;
 	margin: 0;
 	margin-bottom: 0.5rem;
-  }
+}
 
-  .empty-state p {
+.empty-state p {
 	color: #666;
 	margin-bottom: 1.5rem;
-  }
+}
 
-  .dashboard-loading {
+.dashboard-loading {
 	text-align: center;
 	padding: 4rem 2rem;
 	color: #666;
-  }
+}
 
-  .dashboard-error {
+.dashboard-error {
 	text-align: center;
 	padding: 2rem;
 	background: #fee2e2;
 	border-radius: 8px;
 	color: #dc2626;
 	margin: 2rem 0;
-  }
+}
 
-  @media (max-width: 768px) {
+@media (max-width: 768px) {
 	.dashboard {
-	  padding: 1rem;
+		padding: 1rem;
 	}
 
 	.dashboard-header {
-	  flex-direction: column;
-	  align-items: flex-start;
-	  gap: 1rem;
-	  margin-bottom: 2rem;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 1rem;
+		margin-bottom: 2rem;
 	}
 
 	.create-list-btn {
-	  width: 100%;
-	  justify-content: center;
+		width: 100%;
+		justify-content: center;
 	}
 
 	.lists-grid {
-	  grid-template-columns: 1fr;
+		grid-template-columns: 1fr;
 	}
 
 	.list-card {
-	  margin-bottom: 1rem;
+		margin-bottom: 1rem;
 	}
-  }
+}
