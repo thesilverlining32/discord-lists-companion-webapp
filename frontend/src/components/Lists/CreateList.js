@@ -1,4 +1,3 @@
-// src/components/Lists/CreateList.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createList } from '../../services/api';
@@ -17,14 +16,18 @@ const CreateList = () => {
     setError(null);
 
     try {
-      await createList({
-        name: listName,
-        description: description || null
-      });
+      const listData = {
+        name: listName.trim(),
+        description: description.trim() || ""
+      };
+
+      console.log('Submitting list data:', listData);
+      const response = await createList(listData);
+      console.log('List created successfully:', response);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to create list. Please try again.');
-      console.error('Error creating list:', err);
+      console.error('List creation error:', err);
+      setError(err.message || 'Failed to create list. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -45,6 +48,8 @@ const CreateList = () => {
             placeholder="Enter list name"
             required
             disabled={isSubmitting}
+            minLength={1}
+            maxLength={100}
           />
         </div>
         <div className="form-group">
@@ -55,9 +60,13 @@ const CreateList = () => {
             onChange={(e) => setDescription(e.target.value)}
             placeholder="Enter description"
             disabled={isSubmitting}
+            maxLength={500}
           />
         </div>
-        <button type="submit" disabled={isSubmitting}>
+        <button 
+          type="submit" 
+          disabled={isSubmitting || !listName.trim()}
+        >
           {isSubmitting ? 'Creating...' : 'Create List'}
         </button>
       </form>
