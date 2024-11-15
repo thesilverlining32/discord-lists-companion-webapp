@@ -1,3 +1,4 @@
+// src/services/api.js
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -17,9 +18,25 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
+// Modified createList function to properly format the request
+export const createList = async (data) => {
+  const formattedData = {
+    name: data.name,
+    description: data.description || null,
+    owner_id: null  // This will be set by the backend
+  };
+  
+  try {
+    const response = await apiClient.post('/lists', formattedData);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating list:', error.response?.data || error.message);
+    throw error;
+  }
+};
+
 export const getLists = () => apiClient.get('/lists');
 export const getList = (id) => apiClient.get(`/lists/${id}`);
-export const createList = (data) => apiClient.post('/lists', data);
 export const updateList = (id, data) => apiClient.put(`/lists/${id}`, data);
 export const deleteList = (id) => apiClient.delete(`/lists/${id}`);
 
