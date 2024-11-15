@@ -1,15 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { getList, createListItem, updateListItem, deleteListItem } from '../../services/api';
-import './ListDetail.css';
+import { useParams, useNavigate } from 'react-router-dom';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+         AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
+         AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { getList, createListItem, updateListItem, deleteListItem, deleteList } from '../../services/api';
 
 const ListDetail = () => {
   const { listId } = useParams();
+  const navigate = useNavigate();
   const [list, setList] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [newItem, setNewItem] = useState({ title: '', description: '', type: 'Custom' });
-  const [editingItem, setEditingItem] = useState(null);
+  const [newItem, setNewItem] = useState({
+    title: '',
+    description: '',
+    type: 'Custom',
+    metadata: {},
+    image_url: ''
+  });
 
   useEffect(() => {
     fetchList();
@@ -22,7 +30,7 @@ const ListDetail = () => {
       setList(response.data);
       setError(null);
     } catch (err) {
-      setError('Failed to fetch list details. Please try again.');
+      setError('Failed to fetch list details');
       console.error('Error fetching list:', err);
     } finally {
       setIsLoading(false);
@@ -32,24 +40,16 @@ const ListDetail = () => {
   const handleCreateItem = async (e) => {
     e.preventDefault();
     try {
-      await createListItem(listId, newItem);
-      setNewItem({ title: '', description: '', type: 'Custom' });
+      const itemData = {
+        ...newItem,
+        list_id: listId
+      };
+      await createListItem(listId, itemData);
+      setNewItem({ title: '', description: '', type: 'Custom', metadata: {}, image_url: '' });
       fetchList();
     } catch (err) {
-      setError('Failed to create list item. Please try again.');
+      setError('Failed to create list item');
       console.error('Error creating list item:', err);
-    }
-  };
-
-  const handleUpdateItem = async (e) => {
-    e.preventDefault();
-    try {
-      await updateListItem(listId, editingItem.id, editingItem);
-      setEditingItem(null);
-      fetchList();
-    } catch (err) {
-      setError('Failed to update list item. Please try again.');
-      console.error('Error updating list item:', err);
     }
   };
 
@@ -58,95 +58,148 @@ const ListDetail = () => {
       await deleteListItem(listId, itemId);
       fetchList();
     } catch (err) {
-      setError('Failed to delete list item. Please try again.');
+      setError('Failed to delete list item');
       console.error('Error deleting list item:', err);
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div className="error-message">{error}</div>;
-  if (!list) return <div>List not found</div>;
+  const handleDeleteList = async () => {
+    try {
+      await deleteList(listId);
+      navigate('/dashboard');
+    } catch (err) {
+      setError('Failed to delete list');
+      console.error('Error deleting list:', err);
+    }
+  };
+
+  if (isLoading) return <div className="p-4">Loading...</div>;
+  if (error) return <div className="p-4 text-red-500">{error}</div>;
+  if (!list) return <div className="p-4">List not found</div>;
 
   return (
-    <div className="list-detail">
-      <h2>{list.name}</h2>
-      <p>{list.description}</p>
+    <div className="max-w-4xl mx-auto p-4">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">{list.name}</h2>
 
-      <h3>Add New Item</h3>
-      <form onSubmit={handleCreateItem}>
-        <input
-          type="text"
-          value={newItem.title}
-          onChange={(e) => setNewItem({...newItem, title: e.target.value})}
-          placeholder="Title"
-          required
-        />
-        <input
-          type="text"
-          value={newItem.description}
-          onChange={(e) => setNewItem({...newItem, description: e.target.value})}
-          placeholder="Description"
-        />
-        <select
-          value={newItem.type}
-          onChange={(e) => setNewItem({...newItem, type: e.target.value})}
-        >
-          <option value="Custom">Custom</option>
-          <option value="Movie">Movie</option>
-          <option value="Game">Game</option>
-          <option value="Book">Book</option>
-          <option value="Comic">Comic</option>
-        </select>
-        <button type="submit">Add Item</button>
-      </form>
+        <AlertDialog>
+          <AlertDialogTrigger className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+            Delete List
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete the list and all its items.
+                This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteList} className="bg-red-600 hover:bg-red-700">
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
 
-      <h3>Items:</h3>
-      {list.items && list.items.length > 0 ? (
-        <ul className="list-items">
-          {list.items.map((item) => (
-            <li key={item.id} className="list-item">
-              {editingItem && editingItem.id === item.id ? (
-                <form onSubmit={handleUpdateItem}>
-                  <input
-                    type="text"
-                    value={editingItem.title}
-                    onChange={(e) => setEditingItem({...editingItem, title: e.target.value})}
-                    required
-                  />
-                  <input
-                    type="text"
-                    value={editingItem.description}
-                    onChange={(e) => setEditingItem({...editingItem, description: e.target.value})}
-                  />
-                  <select
-                    value={editingItem.type}
-                    onChange={(e) => setEditingItem({...editingItem, type: e.target.value})}
-                  >
-                    <option value="Custom">Custom</option>
-                    <option value="Movie">Movie</option>
-                    <option value="Game">Game</option>
-                    <option value="Book">Book</option>
-                    <option value="Comic">Comic</option>
-                  </select>
-                  <button type="submit">Save</button>
-                  <button type="button" onClick={() => setEditingItem(null)}>Cancel</button>
-                </form>
-              ) : (
-                <>
-                  <h4>{item.title}</h4>
-                  <p>{item.description}</p>
-                  <p>Type: {item.type}</p>
-                  {item.rating && <p>Rating: {item.rating}/5</p>}
-                  <button onClick={() => setEditingItem(item)}>Edit</button>
-                  <button onClick={() => handleDeleteItem(item.id)}>Delete</button>
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No items in this list yet.</p>
-      )}
+      <p className="text-gray-600 mb-8">{list.description}</p>
+
+      <div className="bg-white rounded-lg shadow p-6 mb-8">
+        <h3 className="text-xl font-semibold mb-4">Add New Item</h3>
+        <form onSubmit={handleCreateItem}>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Type</label>
+              <select
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                value={newItem.type}
+                onChange={(e) => setNewItem({...newItem, type: e.target.value})}
+              >
+                <option value="Custom">Custom</option>
+                <option value="Movie">Movie</option>
+                <option value="Game">Game</option>
+                <option value="Book">Book</option>
+                <option value="Comic">Comic</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Title</label>
+              <input
+                type="text"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                value={newItem.title}
+                onChange={(e) => setNewItem({...newItem, title: e.target.value})}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Description</label>
+              <textarea
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                value={newItem.description}
+                onChange={(e) => setNewItem({...newItem, description: e.target.value})}
+                rows={3}
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700"
+            >
+              Add Item
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div className="space-y-4">
+        <h3 className="text-xl font-semibold">Items</h3>
+        {list.items?.length > 0 ? (
+          list.items.map((item) => (
+            <div key={item.id} className="bg-white rounded-lg shadow p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h4 className="text-lg font-medium">{item.title}</h4>
+                  <p className="text-gray-600">{item.description}</p>
+                  <span className="inline-block bg-gray-100 rounded px-2 py-1 text-sm text-gray-700 mt-2">
+                    {item.type}
+                  </span>
+                </div>
+
+                <AlertDialog>
+                  <AlertDialogTrigger className="text-red-600 hover:text-red-700">
+                    Delete
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete Item</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to delete this item?
+                        This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleDeleteItem(item.id)}
+                        className="bg-red-600 hover:bg-red-700"
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-gray-500">No items in this list yet.</p>
+        )}
+      </div>
     </div>
   );
 };
