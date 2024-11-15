@@ -79,3 +79,7 @@ class ListItemModel(BaseModel):
         json_encoders={ObjectId: str},
         from_attributes=True
     )
+
+class ListCreateRequest(BaseModel):
+    name: str = Field(..., min_length=1, max_length=100)
+    description: Optional[str] = Field(default="", max_length=500)
