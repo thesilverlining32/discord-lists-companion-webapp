@@ -1,13 +1,13 @@
-// src/components/Layout/Header.js
-
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useUser } from '../../contexts/UserContext';
 import { logout } from '../../services/auth';
+import './Header.css';
 
 const Header = () => {
   const { user, setUser, loading } = useUser();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => {
     logout();
@@ -15,24 +15,54 @@ const Header = () => {
     navigate('/');
   };
 
+  const isActiveLink = (path) => {
+    return location.pathname === path ? 'active' : '';
+  };
+
   return (
-    <header>
-      <nav>
-        <ul>
-          <li><Link to="/">Home</Link></li>
-          {!loading && (
-            user ? (
-              <>
-                <li><Link to="/dashboard">Dashboard</Link></li>
-                <li><Link to="/profile">Profile</Link></li>
-                <li><button onClick={handleLogout}>Logout</button></li>
-              </>
-            ) : (
-              <li><Link to="/login">Login</Link></li>
-            )
-          )}
-        </ul>
-      </nav>
+    <header className="header">
+      <div className="header-container">
+        <Link to="/" className="logo">
+          Idea List
+        </Link>
+
+        {!loading && (
+          <nav>
+            <ul className="nav-links">
+              <li>
+                <Link to="/" className={isActiveLink('/')}>
+                  Home
+                </Link>
+              </li>
+              {user ? (
+                <>
+                  <li>
+                    <Link to="/dashboard" className={isActiveLink('/dashboard')}>
+                      Dashboard
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/profile" className={isActiveLink('/profile')}>
+                      Profile
+                    </Link>
+                  </li>
+                  <li>
+                    <button onClick={handleLogout} className="logout-button">
+                      Logout
+                    </button>
+                  </li>
+                </>
+              ) : (
+                <li>
+                  <Link to="/login" className={isActiveLink('/login')}>
+                    Login
+                  </Link>
+                </li>
+              )}
+            </ul>
+          </nav>
+        )}
+      </div>
     </header>
   );
 };
