@@ -19,7 +19,7 @@ const Dashboard = () => {
     try {
       setIsLoading(true);
       const response = await getLists();
-      console.log('Fetched lists:', response.data); // Debug log
+      console.log('Fetched lists:', response.data);
       setLists(response.data);
       setError(null);
     } catch (err) {
@@ -30,37 +30,51 @@ const Dashboard = () => {
     }
   };
 
-  if (isLoading) return <div className="dashboard-loading">Loading...</div>;
+  if (isLoading) return <div className="dashboard-loading">Loading your lists...</div>;
   if (error) return <div className="dashboard-error">{error}</div>;
 
   return (
     <div className="dashboard">
-      <h1>Welcome, {user.username}!</h1>
-
-      <section className="my-lists">
-        <div className="section-header">
-          <h2>My Lists</h2>
-          <Link to="/lists/new" className="btn btn-primary">Create New List</Link>
+      <header className="dashboard-header">
+        <div className="welcome-section">
+          <h1>Welcome, {user.username}!</h1>
+          <p className="subtitle">Manage and organize your collections</p>
         </div>
+        <Link to="/lists/new" className="btn btn-primary create-list-btn">
+          <span className="btn-icon">+</span>
+          Create New List
+        </Link>
+      </header>
+
+      <section className="lists-section">
+        <h2>My Lists</h2>
 
         {lists.length === 0 ? (
-          <div className="no-lists">
-            <p>You don't have any lists yet.</p>
+          <div className="empty-state">
+            <div className="empty-state-icon">📝</div>
+            <h3>No Lists Yet</h3>
+            <p>Create your first list to get started!</p>
+            <Link to="/lists/new" className="btn btn-primary">Create List</Link>
           </div>
         ) : (
-          <ul className="lists-grid">
+          <div className="lists-grid">
             {lists.map(list => (
-              <li key={list._id} className="list-card">
-                <Link to={`/lists/${list._id}`} className="list-link">
-                  <h3>{list.name}</h3>
-                  {list.description && <p>{list.description}</p>}
-                  <span className="item-count">
-                    {list.items?.length || 0} items
-                  </span>
-                </Link>
-              </li>
+              <Link to={`/lists/${list._id}`} key={list._id} className="list-card">
+                <div className="list-card-content">
+                  <h3 className="list-title">{list.name}</h3>
+                  {list.description && (
+                    <p className="list-description">{list.description}</p>
+                  )}
+                  <div className="list-meta">
+                    <span className="item-count">
+                      {list.items?.length || 0} {list.items?.length === 1 ? 'item' : 'items'}
+                    </span>
+                    <span className="view-details">View Details →</span>
+                  </div>
+                </div>
+              </Link>
             ))}
-          </ul>
+          </div>
         )}
       </section>
     </div>

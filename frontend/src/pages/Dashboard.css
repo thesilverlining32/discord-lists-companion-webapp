@@ -1,116 +1,168 @@
 .dashboard {
 	max-width: 1200px;
 	margin: 0 auto;
-	padding: 2rem 1rem;
+	padding: 2rem;
   }
 
-  .dashboard h1 {
-	font-size: 2rem;
-	color: #333;
-	margin-bottom: 2rem;
-  }
-
-  .section-header {
+  .dashboard-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	margin-bottom: 1.5rem;
+	margin-bottom: 3rem;
+	padding-bottom: 1.5rem;
+	border-bottom: 1px solid #eaeaea;
   }
 
-  .section-header h2 {
-	font-size: 1.5rem;
-	color: #444;
+  .welcome-section h1 {
+	font-size: 2rem;
+	color: #2c3e50;
 	margin: 0;
+	margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+	color: #666;
+	margin: 0;
+  }
+
+  .create-list-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	background-color: #0066cc;
+	color: white;
+	padding: 0.75rem 1.5rem;
+	border-radius: 8px;
+	text-decoration: none;
+	font-weight: 500;
+	transition: all 0.2s ease;
+  }
+
+  .create-list-btn:hover {
+	background-color: #0052a3;
+	transform: translateY(-1px);
+  }
+
+  .btn-icon {
+	font-size: 1.2rem;
+	font-weight: bold;
+  }
+
+  .lists-section {
+	margin-top: 2rem;
+  }
+
+  .lists-section h2 {
+	font-size: 1.5rem;
+	color: #2c3e50;
+	margin-bottom: 1.5rem;
   }
 
   .lists-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 	gap: 1.5rem;
-	list-style: none;
-	padding: 0;
-	margin: 0;
   }
 
   .list-card {
 	background: white;
-	border-radius: 8px;
-	box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-	transition: transform 0.2s ease, box-shadow 0.2s ease;
+	border-radius: 12px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+	transition: all 0.3s ease;
+	text-decoration: none;
+	color: inherit;
+	border: 1px solid #eaeaea;
+	overflow: hidden;
   }
 
   .list-card:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+	transform: translateY(-4px);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+	border-color: #0066cc;
   }
 
-  .list-link {
-	display: block;
+  .list-card-content {
 	padding: 1.5rem;
-	color: inherit;
-	text-decoration: none;
   }
 
-  .list-card h3 {
+  .list-title {
 	font-size: 1.25rem;
-	color: #333;
-	margin: 0 0 0.5rem 0;
+	color: #2c3e50;
+	margin: 0;
+	margin-bottom: 0.5rem;
   }
 
-  .list-card p {
+  .list-description {
 	color: #666;
 	font-size: 0.9rem;
-	margin: 0 0 1rem 0;
-	line-height: 1.4;
+	line-height: 1.5;
+	margin: 0;
+	margin-bottom: 1rem;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+  }
+
+  .list-meta {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-top: auto;
+	padding-top: 1rem;
+	border-top: 1px solid #eaeaea;
   }
 
   .item-count {
-	display: inline-block;
-	font-size: 0.875rem;
-	color: #666;
-	background: #f5f5f5;
+	background: #f5f7fa;
 	padding: 0.25rem 0.75rem;
 	border-radius: 1rem;
-  }
-
-  .btn {
-	display: inline-block;
-	padding: 0.75rem 1.5rem;
-	border-radius: 4px;
-	font-weight: 500;
-	text-decoration: none;
-	transition: background-color 0.2s ease;
-  }
-
-  .btn-primary {
-	background-color: #0066cc;
-	color: white;
-  }
-
-  .btn-primary:hover {
-	background-color: #0052a3;
-  }
-
-  .no-lists {
-	text-align: center;
-	padding: 3rem;
-	background: #f9f9f9;
-	border-radius: 8px;
+	font-size: 0.875rem;
 	color: #666;
+  }
+
+  .view-details {
+	color: #0066cc;
+	font-size: 0.875rem;
+	font-weight: 500;
+  }
+
+  .empty-state {
+	text-align: center;
+	padding: 4rem 2rem;
+	background: #f8fafc;
+	border-radius: 12px;
+	border: 2px dashed #e2e8f0;
+  }
+
+  .empty-state-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+  }
+
+  .empty-state h3 {
+	color: #2c3e50;
+	margin: 0;
+	margin-bottom: 0.5rem;
+  }
+
+  .empty-state p {
+	color: #666;
+	margin-bottom: 1.5rem;
   }
 
   .dashboard-loading {
 	text-align: center;
-	padding: 3rem;
+	padding: 4rem 2rem;
 	color: #666;
   }
 
   .dashboard-error {
 	text-align: center;
 	padding: 2rem;
-	color: #d32f2f;
-	background: #ffebee;
+	background: #fee2e2;
 	border-radius: 8px;
+	color: #dc2626;
 	margin: 2rem 0;
   }
 
@@ -119,17 +171,23 @@
 	  padding: 1rem;
 	}
 
-	.section-header {
+	.dashboard-header {
 	  flex-direction: column;
-	  align-items: stretch;
+	  align-items: flex-start;
 	  gap: 1rem;
+	  margin-bottom: 2rem;
 	}
 
-	.section-header .btn {
-	  text-align: center;
+	.create-list-btn {
+	  width: 100%;
+	  justify-content: center;
 	}
 
 	.lists-grid {
 	  grid-template-columns: 1fr;
+	}
+
+	.list-card {
+	  margin-bottom: 1rem;
 	}
   }
