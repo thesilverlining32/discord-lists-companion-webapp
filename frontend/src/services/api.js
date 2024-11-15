@@ -19,13 +19,12 @@ apiClient.interceptors.request.use((config) => {
 });
 
 export const createList = async (data) => {
-  // Remove any undefined or null values
+  // Only send the required fields in the exact format expected by the backend
   const formattedData = {
-    name: data.name,
-    description: data.description || "",  // Empty string instead of null
-    // Don't include owner_id as it will be set by the backend
+    name: data.name.trim(),
+    description: data.description?.trim() || ""
   };
-  
+
   try {
     console.log('Sending list creation request with data:', formattedData);
     const response = await apiClient.post('/lists', formattedData);
@@ -35,16 +34,18 @@ export const createList = async (data) => {
     console.error('List creation error details:', {
       status: error.response?.status,
       data: error.response?.data,
-      message: error.message
+      message: error.message,
+      validationErrors: error.response?.data?.detail
     });
-    
-    // Format error message for display
-    const errorMessage = error.response?.data?.detail 
-      ? Array.isArray(error.response.data.detail)
+
+    // Extract error message
+    let errorMessage = 'Failed to create list';
+    if (error.response?.data?.detail) {
+      errorMessage = Array.isArray(error.response.data.detail)
         ? error.response.data.detail[0].msg
-        : error.response.data.detail
-      : 'Failed to create list';
-    
+        : error.response.data.detail;
+    }
+
     throw new Error(errorMessage);
   }
 };
