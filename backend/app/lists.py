@@ -74,6 +74,40 @@ async def update_list(list_id: str, list_data: ListModel, current_user: UserMode
     updated_list = await db.lists.find_one({"_id": ObjectId(list_id)})
     return ListModel(**updated_list)
 
+@router.get("/lists/{list_id}", response_model=ListModel)
+async def get_list(
+    list_id: str,
+    current_user: UserModel = Depends(get_current_user),
+    db: AsyncIOMotorClient = Depends(get_database)
+):
+    if not current_user.is_approved:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User is not approved to view lists"
+        )
+
+    try:
+        # Convert string ID to ObjectId
+        list_object_id = ObjectId(list_id)
+    except:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid list ID format"
+        )
+
+    list_data = await db.lists.find_one({
+        "_id": list_object_id,
+        "owner_id": str(current_user.id)
+    })
+
+    if list_data is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="List not found"
+        )
+
+    return ListModel(**list_data)
+
 @router.delete("/lists/{list_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_list(list_id: str, current_user: UserModel = Depends(get_current_user), db: AsyncIOMotorClient = Depends(get_database)):
     if not current_user.is_approved:
