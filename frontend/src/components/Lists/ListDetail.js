@@ -1,203 +1,156 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-         AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
-         AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { getList, createListItem, updateListItem, deleteListItem, deleteList } from '../../services/api';
+import { useParams } from 'react-router-dom';
+import { getList, createListItem, updateListItem, deleteListItem } from '../../services/api';
+import CustomItemForm from './CustomItemForm';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 const ListDetail = () => {
   const { listId } = useParams();
-  const navigate = useNavigate();
   const [list, setList] = useState(null);
+  const [items, setItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [newItem, setNewItem] = useState({
-    title: '',
-    description: '',
-    type: 'Custom',
-    metadata: {},
-    image_url: ''
-  });
+  const [editingItem, setEditingItem] = useState(null);
 
   useEffect(() => {
-    fetchList();
+    fetchListData();
   }, [listId]);
 
-  const fetchList = async () => {
+  const fetchListData = async () => {
     try {
       setIsLoading(true);
       const response = await getList(listId);
       setList(response.data);
+      setItems(response.data.items || []);
       setError(null);
     } catch (err) {
-      setError('Failed to fetch list details');
+      setError('Failed to fetch list details. Please try again.');
       console.error('Error fetching list:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCreateItem = async (e) => {
-    e.preventDefault();
+  const handleCreateItem = async (formData) => {
     try {
-      const itemData = {
-        ...newItem,
-        list_id: listId
-      };
-      await createListItem(listId, itemData);
-      setNewItem({ title: '', description: '', type: 'Custom', metadata: {}, image_url: '' });
-      fetchList();
-    } catch (err) {
-      setError('Failed to create list item');
-      console.error('Error creating list item:', err);
+      const response = await createListItem(listId, formData);
+      setItems(prevItems => [...prevItems, response.data]);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating item:', error);
+      throw new Error(error.response?.data?.detail || 'Failed to create item');
+    }
+  };
+
+  const handleUpdateItem = async (formData) => {
+    if (!editingItem) return;
+
+    try {
+      const response = await updateListItem(listId, editingItem._id, formData);
+      setItems(prevItems =>
+        prevItems.map(item =>
+          item._id === editingItem._id ? response.data : item
+        )
+      );
+      setEditingItem(null);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating item:', error);
+      throw new Error(error.response?.data?.detail || 'Failed to update item');
     }
   };
 
   const handleDeleteItem = async (itemId) => {
     try {
       await deleteListItem(listId, itemId);
-      fetchList();
-    } catch (err) {
-      setError('Failed to delete list item');
-      console.error('Error deleting list item:', err);
-    }
-  };
-
-  const handleDeleteList = async () => {
-    try {
-      await deleteList(listId);
-      navigate('/dashboard');
-    } catch (err) {
-      setError('Failed to delete list');
-      console.error('Error deleting list:', err);
+      setItems(prevItems => prevItems.filter(item => item._id !== itemId));
+      setEditingItem(null);
+    } catch (error) {
+      console.error('Error deleting item:', error);
+      throw new Error(error.response?.data?.detail || 'Failed to delete item');
     }
   };
 
   if (isLoading) return <div className="p-4">Loading...</div>;
-  if (error) return <div className="p-4 text-red-500">{error}</div>;
+  if (error) return <div className="p-4 text-red-600">{error}</div>;
   if (!list) return <div className="p-4">List not found</div>;
 
   return (
     <div className="max-w-4xl mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900">{list.name}</h2>
-
-        <AlertDialog>
-          <AlertDialogTrigger className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-            Delete List
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will permanently delete the list and all its items.
-                This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteList} className="bg-red-600 hover:bg-red-700">
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">{list.name}</h1>
+        {list.description && (
+          <p className="text-gray-600">{list.description}</p>
+        )}
       </div>
 
-      <p className="text-gray-600 mb-8">{list.description}</p>
-
-      <div className="bg-white rounded-lg shadow p-6 mb-8">
-        <h3 className="text-xl font-semibold mb-4">Add New Item</h3>
-        <form onSubmit={handleCreateItem}>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Type</label>
-              <select
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                value={newItem.type}
-                onChange={(e) => setNewItem({...newItem, type: e.target.value})}
-              >
-                <option value="Custom">Custom</option>
-                <option value="Movie">Movie</option>
-                <option value="Game">Game</option>
-                <option value="Book">Book</option>
-                <option value="Comic">Comic</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Title</label>
-              <input
-                type="text"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                value={newItem.title}
-                onChange={(e) => setNewItem({...newItem, title: e.target.value})}
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Description</label>
-              <textarea
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                value={newItem.description}
-                onChange={(e) => setNewItem({...newItem, description: e.target.value})}
-                rows={3}
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full bg-blue-600 text-white rounded-md py-2 px-4 hover:bg-blue-700"
-            >
-              Add Item
-            </button>
-          </div>
-        </form>
+      <div className="mb-8">
+        <h2 className="text-xl font-semibold mb-4">Add New Item</h2>
+        <CustomItemForm
+          onSubmit={handleCreateItem}
+        />
       </div>
 
-      <div className="space-y-4">
-        <h3 className="text-xl font-semibold">Items</h3>
-        {list.items?.length > 0 ? (
-          list.items.map((item) => (
-            <div key={item.id} className="bg-white rounded-lg shadow p-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h4 className="text-lg font-medium">{item.title}</h4>
-                  <p className="text-gray-600">{item.description}</p>
-                  <span className="inline-block bg-gray-100 rounded px-2 py-1 text-sm text-gray-700 mt-2">
-                    {item.type}
-                  </span>
-                </div>
-
-                <AlertDialog>
-                  <AlertDialogTrigger className="text-red-600 hover:text-red-700">
-                    Delete
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Delete Item</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Are you sure you want to delete this item?
-                        This action cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => handleDeleteItem(item.id)}
-                        className="bg-red-600 hover:bg-red-700"
-                      >
-                        Delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
-          ))
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Items</h2>
+        {items.length === 0 ? (
+          <p className="text-gray-600">No items in this list yet.</p>
         ) : (
-          <p className="text-gray-500">No items in this list yet.</p>
+          <div className="space-y-4">
+            {items.map(item => (
+              <div
+                key={item._id}
+                className="bg-white p-4 rounded-lg shadow border border-gray-200"
+              >
+                {editingItem?.id === item._id ? (
+                  <CustomItemForm
+                    initialData={item}
+                    onSubmit={handleUpdateItem}
+                    onDelete={() => handleDeleteItem(item._id)}
+                    isEditing
+                  />
+                ) : (
+                  <div>
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="text-lg font-semibold">{item.title}</h3>
+                      <button
+                        onClick={() => setEditingItem(item)}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        Edit
+                      </button>
+                    </div>
+
+                    {item.description && (
+                      <p className="text-gray-600 mb-2">{item.description}</p>
+                    )}
+
+                    {item.image_url && (
+                      <img
+                        src={item.image_url}
+                        alt={item.title}
+                        className="w-full max-w-md h-48 object-cover rounded mb-2"
+                      />
+                    )}
+
+                    {item.metadata && Object.keys(item.metadata).length > 0 && (
+                      <div className="text-sm text-gray-500">
+                        {item.metadata.creator && (
+                          <p>Creator: {item.metadata.creator}</p>
+                        )}
+                        {item.metadata.year && (
+                          <p>Year: {item.metadata.year}</p>
+                        )}
+                        {item.metadata.genre && (
+                          <p>Genre: {item.metadata.genre}</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
