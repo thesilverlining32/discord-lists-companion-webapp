@@ -10,7 +10,8 @@ const CustomItemForm = ({ onSubmit }) => {
       year: '',
       genre: ''
     },
-    image_url: ''
+    image_url: '',
+    rating: null
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
