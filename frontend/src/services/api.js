@@ -53,7 +53,7 @@ export const createList = async (data) => {
 export const createListItem = async (listId, data) => {
   // Format the data according to ListItemModel schema
   const formattedData = {
-    list_id: listId,
+    list_id: String(listId),
     type: data.type || 'Custom',
     title: data.title.trim(),
     description: data.description?.trim() || null,
