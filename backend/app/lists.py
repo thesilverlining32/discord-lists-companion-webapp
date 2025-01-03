@@ -144,11 +144,11 @@ async def get_list_items(list_id: str, current_user: UserModel = Depends(get_cur
     if not current_user.is_approved:
         raise HTTPException(status_code=403, detail="User is not approved to view list items")
 
-    list_data = await db.lists.find_one({"_id": ObjectId(list_id), "owner_id": current_user.discord_id})
+    list_data = await db.lists.find_one({"_id": ObjectId(list_id), "owner_id": str(current_user.id)})
     if list_data is None:
         raise HTTPException(status_code=404, detail="List not found")
 
-    items = await db.list_items.find({"list_id": ObjectId(list_id)}).to_list(length=None)
+    items = await db.list_items.find({"list_id": list_id}).to_list(length=None)
     return [ListItemModel(**item_data) for item_data in items]
 
 @router.put("/lists/{list_id}/items/{item_id}", response_model=ListItemModel)
