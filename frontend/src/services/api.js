@@ -66,7 +66,7 @@ export const createListItem = async (listId, data) => {
     console.log('Sending list item creation request with data:', formattedData);
     const response = await apiClient.post(`/lists/${listId}/items`, formattedData);
     console.log('List item creation response:', response.data);
-    return response.data;
+    return response;
   } catch (error) {
     console.error('List item creation error details:', {
       status: error.response?.status,
