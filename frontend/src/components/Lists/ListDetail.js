@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { getList, createListItem, updateListItem, deleteListItem } from '../../services/api';
+import { getList, getListItems, createListItem, updateListItem, deleteListItem } from '../../services/api';
 import CustomItemForm from './CustomItemForm';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../../components/ui/alert-dialog';
 
@@ -19,9 +19,10 @@ const ListDetail = () => {
   const fetchListData = async () => {
     try {
       setIsLoading(true);
-      const response = await getList(listId);
-      setList(response.data);
-      setItems(response.data.items || []);
+      const listResponse = await getList(listId);
+      const itemsResponse = await getListItems(listId);
+      setList(listResponse.data);
+      setItems(itemsResponse.data || []);
       setError(null);
     } catch (err) {
       setError('Failed to fetch list details. Please try again.');
