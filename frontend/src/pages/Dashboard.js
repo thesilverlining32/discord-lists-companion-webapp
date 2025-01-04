@@ -67,7 +67,7 @@ const Dashboard = () => {
                   )}
                   <div className="list-meta">
                     <span className="item-count">
-                      {list.items?.length || 0} {list.items?.length === 1 ? 'item' : 'items'}
+                      {list.item_count} {list.item_count === 1 ? 'item' : 'items'}
                     </span>
                     <span className="view-details">View Details →</span>
                   </div>
