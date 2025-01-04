@@ -115,19 +115,23 @@ const ListDetail = () => {
                         </button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <button className="text-red-600 hover:text-red-800">
+                            <button className="text-red-600 hover:text-red-800 px-2 py-1 rounded">
                               Delete
                             </button>
                           </AlertDialogTrigger>
-                          <AlertDialogContent>
+                          <AlertDialogContent className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Item</AlertDialogTitle>
-                              <AlertDialogDescription>
+                              <AlertDialogTitle className="text-xl font-semibold text-gray-900">
+                                Delete Item
+                              </AlertDialogTitle>
+                              <AlertDialogDescription className="text-gray-600 mt-2">
                                 Are you sure you want to delete "{item.title}"? This action cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogFooter className="mt-6 flex justify-end gap-3">
+                              <AlertDialogCancel className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-700">
+                                Cancel
+                              </AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={async () => {
                                   try {
@@ -136,7 +140,7 @@ const ListDetail = () => {
                                     console.error('Failed to delete item:', error);
                                   }
                                 }}
-                                className="bg-red-600 hover:bg-red-700"
+                                className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white"
                               >
                                 Delete
                               </AlertDialogAction>
