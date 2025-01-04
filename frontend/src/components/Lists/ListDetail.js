@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { getList, getListItems, createListItem, updateListItem, deleteListItem } from '../../services/api';
 import CustomItemForm from './CustomItemForm';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../../components/ui/alert-dialog';
+import './alert-dialog.css';
 
 const ListDetail = () => {
   const { listId } = useParams();
@@ -119,17 +120,16 @@ const ListDetail = () => {
                               Delete
                             </button>
                           </AlertDialogTrigger>
-                          <AlertDialogContent className="bg-white p-6 rounded-lg shadow-lg max-w-md mx-auto">
-                            <AlertDialogHeader>
-                              <AlertDialogTitle className="text-xl font-semibold text-gray-900">
-                                Delete Item
-                              </AlertDialogTitle>
-                              <AlertDialogDescription className="text-gray-600 mt-2">
+                        <div className="AlertDialogOverlay">
+                          <div className="AlertDialogContent">
+                            <div className="mb-4">
+                              <h3 className="text-xl font-semibold text-gray-900">Delete Item</h3>
+                              <p className="text-gray-600 mt-2">
                                 Are you sure you want to delete "{item.title}"? This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter className="mt-6 flex justify-end gap-3">
-                              <AlertDialogCancel className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-700">
+                              </p>
+                            </div>
+                            <div className="flex justify-end gap-3">
+                              <AlertDialogCancel className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 border-0">
                                 Cancel
                               </AlertDialogCancel>
                               <AlertDialogAction
@@ -140,12 +140,13 @@ const ListDetail = () => {
                                     console.error('Failed to delete item:', error);
                                   }
                                 }}
-                                className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white"
+                                className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white border-0"
                               >
                                 Delete
                               </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
+                            </div>
+                          </div>
+                        </div>
                         </AlertDialog>
                       </div>
                     </div>
