@@ -4,9 +4,9 @@ import { getList, getListItems, createListItem, updateListItem, deleteListItem }
 import AddItemDialog from './AddItemDialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
          AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
-         AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+         AlertDialogTitle, AlertDialogTrigger } from '../../components/ui/alert-dialog';
+import { Card, CardContent } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
 
 const ListDetail = () => {
   const { listId } = useParams();
