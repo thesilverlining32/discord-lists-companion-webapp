@@ -55,6 +55,7 @@ class ListModel(BaseModel):
     name: str
     description: Optional[str] = ""
     owner_id: str
+    item_count: Optional[int] = 0
 
     model_config = ConfigDict(
         populate_by_name=True,
