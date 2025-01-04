@@ -103,23 +103,47 @@ const ListDetail = () => {
                 key={item._id}
                 className="bg-white p-4 rounded-lg shadow border border-gray-200"
               >
-                {editingItem?.id === item._id ? (
-                  <CustomItemForm
-                    initialData={item}
-                    onSubmit={handleUpdateItem}
-                    onDelete={() => handleDeleteItem(item._id)}
-                    isEditing
-                  />
-                ) : (
                   <div>
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="text-lg font-semibold">{item.title}</h3>
-                      <button
-                        onClick={() => setEditingItem(item)}
-                        className="text-blue-600 hover:text-blue-800"
-                      >
-                        Edit
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setEditingItem(item)}
+                          className="text-blue-600 hover:text-blue-800"
+                        >
+                          Edit
+                        </button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button className="text-red-600 hover:text-red-800">
+                              Delete
+                            </button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Item</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete "{item.title}"? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={async () => {
+                                  try {
+                                    await handleDeleteItem(item._id);
+                                  } catch (error) {
+                                    console.error('Failed to delete item:', error);
+                                  }
+                                }}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </div>
 
                     {item.description && (
@@ -148,7 +172,6 @@ const ListDetail = () => {
                       </div>
                     )}
                   </div>
-                )}
               </div>
             ))}
           </div>
