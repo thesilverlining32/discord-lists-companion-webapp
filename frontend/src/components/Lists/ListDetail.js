@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom';
 import { getList, getListItems, createListItem, updateListItem, deleteListItem } from '../../services/api';
 import CustomItemForm from './CustomItemForm';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '../../components/ui/alert-dialog';
-import './alert-dialog.css';
 
 const ListDetail = () => {
   const { listId } = useParams();
@@ -115,24 +114,20 @@ const ListDetail = () => {
                           Edit
                         </button>
                         <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <button className="text-red-600 hover:text-red-800 px-2 py-1 rounded">
+                          <AlertDialogTrigger>
+                            <button className="text-red-600 hover:text-red-800">
                               Delete
                             </button>
                           </AlertDialogTrigger>
-                          <AlertDialogContent className="bg-white p-6 rounded-lg">
+                          <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle className="text-xl font-semibold text-gray-900">
-                                Delete Item
-                              </AlertDialogTitle>
-                              <AlertDialogDescription className="text-gray-600 mt-2">
+                              <AlertDialogTitle>Delete Item</AlertDialogTitle>
+                              <AlertDialogDescription>
                                 Are you sure you want to delete "{item.title}"? This action cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
-                            <AlertDialogFooter className="mt-6 flex justify-end gap-3">
-                              <AlertDialogCancel className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 border-0">
-                                Cancel
-                              </AlertDialogCancel>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={async () => {
                                   try {
@@ -141,7 +136,7 @@ const ListDetail = () => {
                                     console.error('Failed to delete item:', error);
                                   }
                                 }}
-                                className="px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white border-0"
+                                className="bg-red-600 hover:bg-red-700"
                               >
                                 Delete
                               </AlertDialogAction>
