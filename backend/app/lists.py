@@ -11,7 +11,7 @@ router = APIRouter()
 async def get_database(request: Request) -> AsyncIOMotorClient:
     return request.app.mongodb
 
-@router.get("/lists")
+@router.get("/lists", response_model=List[ListModel])
 async def get_user_lists(
     current_user: UserModel = Depends(get_current_user),
     db: AsyncIOMotorClient = Depends(get_database)
@@ -23,13 +23,17 @@ async def get_user_lists(
     cursor = db.lists.find({"owner_id": str(current_user.id)})
     lists = await cursor.to_list(length=None)
 
-    # Get item counts for each list
+    # Get item counts for each list and prepare response
+    response_lists = []
     for list_data in lists:
         list_id = str(list_data["_id"])
         item_count = await db.list_items.count_documents({"list_id": list_id})
-        list_data["item_count"] = item_count
+        # Create a copy of list_data and add item_count
+        list_with_count = dict(list_data)
+        list_with_count["item_count"] = item_count
+        response_lists.append(ListModel(**list_with_count))
 
-    return lists
+    return response_lists
 
 @router.post("/lists", response_model=ListModel, status_code=status.HTTP_201_CREATED)
 async def create_list(
