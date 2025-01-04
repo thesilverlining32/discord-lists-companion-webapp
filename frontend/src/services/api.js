@@ -77,6 +77,18 @@ export const createListItem = async (listId, data) => {
   }
 };
 
+export const deleteListItem = async (listId, itemId) => {
+  try {
+    console.log('Deleting item:', { listId, itemId });
+    const response = await apiClient.delete(`/lists/${listId}/items/${itemId}`);
+    console.log('Delete response:', response);
+    return response;
+  } catch (error) {
+    console.error('Delete error:', error);
+    throw error;
+  }
+};
+
 export const getLists = () => apiClient.get('/lists');
 export const getList = (id) => apiClient.get(`/lists/${id}`);
 export const updateList = (id, data) => apiClient.put(`/lists/${id}`, data);
@@ -84,5 +96,4 @@ export const deleteList = (id) => apiClient.delete(`/lists/${id}`);
 
 export const getListItems = (listId) => apiClient.get(`/lists/${listId}/items`);
 export const updateListItem = (listId, itemId, data) => apiClient.put(`/lists/${listId}/items/${itemId}`, data);
-export const deleteListItem = (listId, itemId) => apiClient.delete(`/lists/${listId}/items/${itemId}`);
 export const rateListItem = (listId, itemId, rating) => apiClient.post(`/lists/${listId}/items/${itemId}/rate`, { rating });
