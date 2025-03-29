@@ -18,18 +18,20 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
+// Lists endpoints
 export const createList = async (data) => {
   // Only send the required fields in the exact format expected by the backend
   const formattedData = {
     name: data.name.trim(),
-    description: data.description?.trim() || ""
+    description: data.description?.trim() || "",
+    is_public: data.is_public || false
   };
 
   try {
     console.log('Sending list creation request with data:', formattedData);
     const response = await apiClient.post('/lists', formattedData);
     console.log('List creation response:', response.data);
-    return response.data;
+    return { data: response.data };
   } catch (error) {
     console.error('List creation error details:', {
       status: error.response?.status,
@@ -50,6 +52,12 @@ export const createList = async (data) => {
   }
 };
 
+export const getLists = () => apiClient.get('/lists');
+export const getList = (id) => apiClient.get(`/lists/${id}`);
+export const updateList = (id, data) => apiClient.put(`/lists/${id}`, data);
+export const deleteList = (id) => apiClient.delete(`/lists/${id}`);
+
+// List Items endpoints
 export const createListItem = async (listId, data) => {
   // Format the data according to ListItemModel schema
   const formattedData = {
@@ -77,6 +85,10 @@ export const createListItem = async (listId, data) => {
   }
 };
 
+export const getListItems = (listId) => apiClient.get(`/lists/${listId}/items`);
+
+export const updateListItem = (listId, itemId, data) => apiClient.put(`/lists/${listId}/items/${itemId}`, data);
+
 export const deleteListItem = async (listId, itemId) => {
   try {
     console.log('Deleting item:', { listId, itemId });
@@ -89,11 +101,21 @@ export const deleteListItem = async (listId, itemId) => {
   }
 };
 
-export const getLists = () => apiClient.get('/lists');
-export const getList = (id) => apiClient.get(`/lists/${id}`);
-export const updateList = (id, data) => apiClient.put(`/lists/${id}`, data);
-export const deleteList = (id) => apiClient.delete(`/lists/${id}`);
-
-export const getListItems = (listId) => apiClient.get(`/lists/${listId}/items`);
-export const updateListItem = (listId, itemId, data) => apiClient.put(`/lists/${listId}/items/${itemId}`, data);
 export const rateListItem = (listId, itemId, rating) => apiClient.post(`/lists/${listId}/items/${itemId}/rate`, { rating });
+
+// Sharing endpoints
+export const searchUsers = (query) => apiClient.get(`/users/search?query=${encodeURIComponent(query)}`);
+
+export const shareList = async (listId, userId, permissionLevel) => {
+  const data = {
+    user_id: userId,
+    permission_level: permissionLevel
+  };
+  return apiClient.post(`/lists/${listId}/share`, data);
+};
+
+export const getListShares = (listId) => apiClient.get(`/lists/${listId}/share`);
+
+export const removeListShare = (listId, userId) => apiClient.delete(`/lists/${listId}/share/${userId}`);
+
+export const setListPublic = (listId, isPublic) => apiClient.put(`/lists/${listId}/public?is_public=${isPublic}`);

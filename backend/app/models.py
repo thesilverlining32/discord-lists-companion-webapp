@@ -1,5 +1,5 @@
 from bson import ObjectId
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Literal
 from pydantic import BaseModel, Field, ConfigDict
 from pydantic_core import core_schema
 
@@ -50,12 +50,30 @@ class UserModel(BaseModel):
             data["_id"] = self.id
         return data
 
+class PermissionLevel(str, Enum):
+    READ = "read"
+    CREATE = "create"
+    EDIT = "edit"
+    DELETE = "delete"
+
+class UserPermission(BaseModel):
+    user_id: str
+    username: Optional[str] = None  # Store username for display purposes
+    permission_level: PermissionLevel = PermissionLevel.READ
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+        use_enum_values=True
+    )
+
 class ListModel(BaseModel):
     id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
     name: str
     description: Optional[str] = ""
     owner_id: str
     item_count: Optional[int] = 0
+    is_public: bool = False
+    shared_with: Optional[List[UserPermission]] = Field(default_factory=list)
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -83,9 +101,19 @@ class ListItemModel(BaseModel):
 class ListCreateRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     description: Optional[str] = Field(default="")
+    is_public: Optional[bool] = Field(default=False)
 
     model_config = ConfigDict(
         populate_by_name=True,
         arbitrary_types_allowed=True,
         json_encoders={ObjectId: str}
+    )
+
+class ShareListRequest(BaseModel):
+    user_id: str
+    permission_level: PermissionLevel = PermissionLevel.READ
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+        use_enum_values=True
     )

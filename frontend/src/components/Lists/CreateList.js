@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createList } from '../../services/api';
+import { Alert, AlertDescription } from '../ui/alert';
+import { Button } from '../ui/button';
 import './CreateList.css';
 
 const CreateList = () => {
   const [listName, setListName] = useState('');
   const [description, setDescription] = useState('');
+  const [isPublic, setIsPublic] = useState(false);
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -18,7 +21,8 @@ const CreateList = () => {
     try {
       const listData = {
         name: listName.trim(),
-        description: description.trim() || ""
+        description: description.trim() || "",
+        is_public: isPublic
       };
 
       console.log('Submitting list data:', listData);
@@ -36,7 +40,11 @@ const CreateList = () => {
   return (
     <div className="create-list">
       <h2>Create New List</h2>
-      {error && <p className="error-message">{error}</p>}
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label htmlFor="listName">List Name *</label>
@@ -63,12 +71,31 @@ const CreateList = () => {
             maxLength={500}
           />
         </div>
-        <button 
-          type="submit" 
+        <div className="form-group">
+          <div className="flex items-center">
+            <input
+              id="isPublic"
+              type="checkbox"
+              checked={isPublic}
+              onChange={(e) => setIsPublic(e.target.checked)}
+              className="h-4 w-4 mr-2"
+              disabled={isSubmitting}
+            />
+            <label htmlFor="isPublic" className="text-sm font-medium">
+              Make this list public (anyone with the link can view)
+            </label>
+          </div>
+          <p className="text-xs text-gray-500 mt-1 ml-6">
+            Public lists can be viewed by anyone, even users who haven't been explicitly shared with.
+          </p>
+        </div>
+        <Button
+          type="submit"
           disabled={isSubmitting || !listName.trim()}
+          className="w-full"
         >
           {isSubmitting ? 'Creating...' : 'Create List'}
-        </button>
+        </Button>
       </form>
     </div>
   );
