@@ -1,5 +1,6 @@
 from bson import ObjectId
 from typing import Optional, Dict, Any, List, Literal
+from enum import Enum
 from pydantic import BaseModel, Field, ConfigDict
 from pydantic_core import core_schema
 
