@@ -24,6 +24,13 @@ const Dashboard = () => {
       setIsLoading(true);
       const response = await getLists();
       console.log('Fetched lists:', response.data);
+
+      // Log the current user ID for debugging
+      console.log('Current user ID:', user?.id);
+      response.data.forEach(list => {
+        console.log(`List ${list.name} owner_id: ${list.owner_id}`);
+      });
+
       setLists(response.data);
       setError(null);
     } catch (err) {
@@ -35,6 +42,10 @@ const Dashboard = () => {
   };
 
   const getListOwnershipStatus = (list) => {
+    // Log for debugging
+    console.log(`Checking ownership for list: ${list.name}`);
+    console.log(`List owner_id: ${list.owner_id}, User id: ${user.id}`);
+
     if (list.owner_id === user.id) {
       return 'owner';
     }
@@ -54,6 +65,7 @@ const Dashboard = () => {
   if (isLoading) return <div className="dashboard-loading">Loading your lists...</div>;
   if (error) return <div className="dashboard-error">{error}</div>;
 
+  // Important: Here's where we check for ownership - make sure IDs match exactly
   const ownedLists = lists.filter(list => list.owner_id === user.id);
   const sharedLists = lists.filter(list => list.owner_id !== user.id);
 

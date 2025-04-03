@@ -41,6 +41,10 @@ const ListDetail = () => {
       setList(listData);
       setItems(itemsResponse.data || []);
 
+      // Debug info
+      console.log('List data:', listData);
+      console.log('Current user:', user);
+
       // Determine user's permission level
       determineUserPermission(listData);
 
@@ -54,11 +58,16 @@ const ListDetail = () => {
   };
 
   const determineUserPermission = (listData) => {
+    // Log for debugging
+    console.log(`Checking permissions for list: ${listData.name}`);
+    console.log(`List owner_id: ${listData.owner_id}, User id: ${user?.id}`);
+
     // Default to no permission
     let permission = null;
 
-    // Check if user is the owner
-    if (listData.owner_id === user?.id) {
+    // Check if user is the owner - this is the key comparison that must match
+    if (listData.owner_id === user.id) {
+      console.log("User is the owner!");
       setUserPermission('owner');
       return;
     }
@@ -70,12 +79,13 @@ const ListDetail = () => {
 
     // Check shared permissions
     const sharedWith = listData.shared_with || [];
-    const userPermissions = sharedWith.find(p => p.user_id === user?.id);
+    const userPermissions = sharedWith.find(p => p.user_id === user.id);
 
     if (userPermissions) {
       permission = userPermissions.permission_level;
     }
 
+    console.log(`Setting user permission to: ${permission}`);
     setUserPermission(permission);
   };
 
@@ -128,6 +138,13 @@ const ListDetail = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-4">
+      {/* Debug info */}
+      <div className="mb-4 p-2 bg-gray-100 rounded text-xs" style={{display: 'none'}}>
+        <p>Debug: List owner_id: {list.owner_id}</p>
+        <p>Debug: User id: {user.id}</p>
+        <p>Debug: Permission: {userPermission}</p>
+      </div>
+
       {/* Header Section */}
       <div className="flex justify-between items-start mb-8">
         <div>
