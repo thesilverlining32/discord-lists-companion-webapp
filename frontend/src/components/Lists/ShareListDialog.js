@@ -10,6 +10,8 @@ import {
 import { Button } from '../ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Alert, AlertDescription } from '../ui/alert';
+import { Badge } from '../ui/badge';
+import { Users, Search, UserPlus } from 'lucide-react';
 import { searchUsers, shareList, getListShares, removeListShare, setListPublic } from '../../services/api';
 import './ShareListDialog.css';
 
@@ -103,165 +105,194 @@ const ShareListDialog = ({ list, isOpen, onClose, onListUpdated }) => {
     }
   };
 
-  const getPermissionLabel = (permission) => {
-    switch (permission) {
-      case 'read': return 'Can view';
-      case 'create': return 'Can add items';
-      case 'edit': return 'Can edit';
-      case 'delete': return 'Can delete';
-      default: return permission;
-    }
-  };
+  const permissionOptions = [
+    { value: 'read', label: 'Can view', description: 'Users can only view the list and its items' },
+    { value: 'create', label: 'Can add items', description: 'Users can view and add new items to the list' },
+    { value: 'edit', label: 'Can edit', description: 'Users can view, add, and edit items in the list' },
+    { value: 'delete', label: 'Can delete', description: 'Users have full control except for sharing' },
+  ];
 
   if (!list) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Share "{list.name}"</DialogTitle>
+          <DialogTitle className="text-xl">Share "{list.name}"</DialogTitle>
           <DialogDescription>
             Share your list with other users or make it public
           </DialogDescription>
         </DialogHeader>
 
         {error && (
-          <Alert variant="destructive">
+          <Alert variant="destructive" className="my-2">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="users">Share with Users</TabsTrigger>
-            <TabsTrigger value="public">Public Settings</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-4">
+            <TabsTrigger value="users" className="py-2">
+              <Users className="h-4 w-4 mr-2" />
+              Share with Users
+            </TabsTrigger>
+            <TabsTrigger value="public" className="py-2">
+              <Users className="h-4 w-4 mr-2" />
+              Public Settings
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="users" className="mt-4">
-            <div className="space-y-4">
-              {/* Search for users */}
-              <form onSubmit={handleSearch} className="space-y-2">
-                <div className="flex items-center space-x-2">
+          <TabsContent value="users" className="space-y-4">
+            {/* Search for users */}
+            <form onSubmit={handleSearch} className="space-y-2">
+              <div className="border rounded-md p-4">
+                <h3 className="text-sm font-medium mb-2">Add people</h3>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search className="h-4 w-4 text-gray-400" />
+                  </div>
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search by username or email"
-                    className="flex-1 px-3 py-2 border rounded"
+                    className="block w-full pl-10 pr-3 py-2 border rounded-md"
                     disabled={isSearching}
-                    required
                   />
-                  <select
-                    value={selectedPermission}
-                    onChange={(e) => setSelectedPermission(e.target.value)}
-                    className="px-3 py-2 border rounded"
-                  >
-                    <option value="read">Can view</option>
-                    <option value="create">Can add items</option>
-                    <option value="edit">Can edit</option>
-                    <option value="delete">Can delete</option>
-                  </select>
-                  <Button type="submit" disabled={isSearching}>
+                </div>
+
+                <div className="mt-3">
+                  <label className="block text-sm font-medium mb-2">Permission level:</label>
+                  <div className="space-y-2">
+                    {permissionOptions.map((option) => (
+                      <label key={option.value} className="flex items-start p-2 border rounded-md hover:bg-gray-50 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="permission"
+                          value={option.value}
+                          checked={selectedPermission === option.value}
+                          onChange={() => setSelectedPermission(option.value)}
+                          className="mt-1 mr-3"
+                        />
+                        <div className="flex-1">
+                          <p className="font-medium">{option.label}</p>
+                          <p className="text-xs text-gray-500">{option.description}</p>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-4 flex justify-end">
+                  <Button type="submit" disabled={isSearching || !searchQuery.trim()}>
                     {isSearching ? 'Searching...' : 'Search'}
                   </Button>
                 </div>
-              </form>
-
-              {/* Search results */}
-              {searchResults.length > 0 && (
-                <div className="border rounded-md overflow-hidden">
-                  <h3 className="px-4 py-2 font-medium bg-gray-50">Search Results</h3>
-                  <ul className="divide-y">
-                    {searchResults.map((user) => (
-                      <li key={user._id} className="px-4 py-3 flex justify-between items-center">
-                        <div>
-                          <p className="font-medium">{user.username}</p>
-                          <p className="text-sm text-gray-500">{user.email}</p>
-                        </div>
-                        <Button
-                          size="sm"
-                          onClick={() => handleShareWithUser(user._id)}
-                        >
-                          Share
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Currently shared users */}
-              <div className="border rounded-md overflow-hidden">
-                <h3 className="px-4 py-2 font-medium bg-gray-50">Shared With</h3>
-                {isLoading ? (
-                  <p className="p-4 text-center">Loading...</p>
-                ) : sharedUsers.length === 0 ? (
-                  <p className="p-4 text-center text-gray-500">This list is not shared with anyone yet</p>
-                ) : (
-                  <ul className="divide-y">
-                    {sharedUsers.map((share) => (
-                      <li key={share.user_id} className="px-4 py-3 flex justify-between items-center">
-                        <div>
-                          <p className="font-medium">{share.username || 'Unknown User'}</p>
-                          <p className="text-sm text-gray-500">{getPermissionLabel(share.permission_level)}</p>
-                        </div>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleRemoveUser(share.user_id)}
-                        >
-                          Remove
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
               </div>
+            </form>
+
+            {/* Search results */}
+            {searchResults.length > 0 && (
+              <div className="border rounded-md overflow-hidden">
+                <h3 className="px-4 py-2 font-medium bg-gray-50 border-b">Search Results</h3>
+                <ul className="divide-y max-h-64 overflow-y-auto">
+                  {searchResults.map((user) => (
+                    <li key={user._id} className="px-4 py-3 flex justify-between items-center hover:bg-gray-50">
+                      <div>
+                        <p className="font-medium">{user.username}</p>
+                        <p className="text-sm text-gray-500">{user.email}</p>
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => handleShareWithUser(user._id)}
+                        className="flex items-center"
+                      >
+                        <UserPlus className="h-4 w-4 mr-1" />
+                        Share
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Currently shared users */}
+            <div className="border rounded-md overflow-hidden">
+              <h3 className="px-4 py-2 font-medium bg-gray-50 border-b">People with access</h3>
+              {isLoading ? (
+                <div className="p-4 text-center">
+                  <div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-current border-r-transparent" />
+                  <p className="mt-2 text-sm text-gray-500">Loading...</p>
+                </div>
+              ) : sharedUsers.length === 0 ? (
+                <p className="p-4 text-center text-gray-500">This list is not shared with anyone yet</p>
+              ) : (
+                <ul className="divide-y max-h-64 overflow-y-auto">
+                  {sharedUsers.map((share) => (
+                    <li key={share.user_id} className="px-4 py-3 flex justify-between items-center hover:bg-gray-50">
+                      <div>
+                        <p className="font-medium">{share.username || 'Unknown User'}</p>
+                        <div className="flex items-center mt-1">
+                          <Badge variant="outline" className="text-xs">
+                            {permissionOptions.find(p => p.value === share.permission_level)?.label || share.permission_level}
+                          </Badge>
+                        </div>
+                      </div>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleRemoveUser(share.user_id)}
+                      >
+                        Remove
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </TabsContent>
 
-          <TabsContent value="public" className="mt-4">
-            <div className="space-y-4">
-              <div className="border rounded-md p-4">
-                <h3 className="font-medium mb-2">Public Access</h3>
-                <p className="text-sm text-gray-500 mb-4">
-                  When a list is public, anyone with the link can view it without being explicitly shared.
-                </p>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      id="private"
-                      name="visibility"
-                      checked={!isPublic}
-                      onChange={() => handleSetPublic(false)}
-                    />
-                    <label htmlFor="private">
-                      <span className="font-medium">Private</span>
-                      <p className="text-sm text-gray-500">Only you and people you share with can access</p>
-                    </label>
+          <TabsContent value="public" className="space-y-4">
+            <div className="border rounded-md p-4">
+              <h3 className="font-medium mb-4">Public Access</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                When a list is public, anyone with the link can view it without being explicitly shared.
+              </p>
+              <div className="space-y-4">
+                <label className="flex items-start p-3 border rounded-md hover:bg-gray-50 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="visibility"
+                    checked={!isPublic}
+                    onChange={() => handleSetPublic(false)}
+                    className="mt-1 mr-3"
+                  />
+                  <div>
+                    <p className="font-medium">Private</p>
+                    <p className="text-sm text-gray-500">Only you and people you share with can access</p>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      id="public"
-                      name="visibility"
-                      checked={isPublic}
-                      onChange={() => handleSetPublic(true)}
-                    />
-                    <label htmlFor="public">
-                      <span className="font-medium">Public</span>
-                      <p className="text-sm text-gray-500">Anyone with the link can view this list</p>
-                    </label>
+                </label>
+
+                <label className="flex items-start p-3 border rounded-md hover:bg-gray-50 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="visibility"
+                    checked={isPublic}
+                    onChange={() => handleSetPublic(true)}
+                    className="mt-1 mr-3"
+                  />
+                  <div>
+                    <p className="font-medium">Public</p>
+                    <p className="text-sm text-gray-500">Anyone with the link can view this list</p>
                   </div>
-                </div>
+                </label>
               </div>
             </div>
           </TabsContent>
         </Tabs>
 
-        <DialogFooter>
-          <Button onClick={onClose}>Done</Button>
+        <DialogFooter className="mt-6">
+          <Button onClick={onClose} className="w-full sm:w-auto">Done</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
