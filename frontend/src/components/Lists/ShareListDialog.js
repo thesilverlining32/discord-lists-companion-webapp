@@ -132,11 +132,11 @@ const ShareListDialog = ({ list, isOpen, onClose, onListUpdated }) => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-4">
-            <TabsTrigger value="users" className="py-2">
+            <TabsTrigger value="users" className="py-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
               <Users className="h-4 w-4 mr-2" />
               Share with Users
             </TabsTrigger>
-            <TabsTrigger value="public" className="py-2">
+            <TabsTrigger value="public" className="py-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
               <Users className="h-4 w-4 mr-2" />
               Public Settings
             </TabsTrigger>
@@ -163,20 +163,27 @@ const ShareListDialog = ({ list, isOpen, onClose, onListUpdated }) => {
 
                 <div className="mt-3">
                   <label className="block text-sm font-medium mb-2">Permission level:</label>
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-1 gap-2">
                     {permissionOptions.map((option) => (
-                      <label key={option.value} className="flex items-start p-2 border rounded-md hover:bg-gray-50 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="permission"
-                          value={option.value}
-                          checked={selectedPermission === option.value}
-                          onChange={() => setSelectedPermission(option.value)}
-                          className="mt-1 mr-3"
-                        />
-                        <div className="flex-1">
-                          <p className="font-medium">{option.label}</p>
-                          <p className="text-xs text-gray-500">{option.description}</p>
+                      <label
+                        key={option.value}
+                        className={`flex items-center p-3 border rounded-md hover:bg-gray-50 cursor-pointer ${
+                          selectedPermission === option.value ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                        }`}
+                      >
+                        <div className="flex items-center h-5">
+                          <input
+                            type="radio"
+                            name="permission"
+                            value={option.value}
+                            checked={selectedPermission === option.value}
+                            onChange={() => setSelectedPermission(option.value)}
+                            className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div className="ml-3 flex-1">
+                          <span className="block text-sm font-medium text-gray-700">{option.label}</span>
+                          <span className="block text-sm text-gray-500 mt-1">{option.description}</span>
                         </div>
                       </label>
                     ))}
@@ -258,32 +265,44 @@ const ShareListDialog = ({ list, isOpen, onClose, onListUpdated }) => {
               <p className="text-sm text-gray-500 mb-4">
                 When a list is public, anyone with the link can view it without being explicitly shared.
               </p>
-              <div className="space-y-4">
-                <label className="flex items-start p-3 border rounded-md hover:bg-gray-50 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="visibility"
-                    checked={!isPublic}
-                    onChange={() => handleSetPublic(false)}
-                    className="mt-1 mr-3"
-                  />
-                  <div>
-                    <p className="font-medium">Private</p>
-                    <p className="text-sm text-gray-500">Only you and people you share with can access</p>
+              <div className="grid grid-cols-1 gap-3">
+                <label
+                  className={`flex items-center p-3 border rounded-md hover:bg-gray-50 cursor-pointer ${
+                    !isPublic ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                  }`}
+                >
+                  <div className="flex items-center h-5">
+                    <input
+                      type="radio"
+                      name="visibility"
+                      checked={!isPublic}
+                      onChange={() => handleSetPublic(false)}
+                      className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div className="ml-3 flex-1">
+                    <span className="block text-sm font-medium text-gray-700">Private</span>
+                    <span className="block text-sm text-gray-500 mt-1">Only you and people you share with can access</span>
                   </div>
                 </label>
 
-                <label className="flex items-start p-3 border rounded-md hover:bg-gray-50 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="visibility"
-                    checked={isPublic}
-                    onChange={() => handleSetPublic(true)}
-                    className="mt-1 mr-3"
-                  />
-                  <div>
-                    <p className="font-medium">Public</p>
-                    <p className="text-sm text-gray-500">Anyone with the link can view this list</p>
+                <label
+                  className={`flex items-center p-3 border rounded-md hover:bg-gray-50 cursor-pointer ${
+                    isPublic ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                  }`}
+                >
+                  <div className="flex items-center h-5">
+                    <input
+                      type="radio"
+                      name="visibility"
+                      checked={isPublic}
+                      onChange={() => handleSetPublic(true)}
+                      className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div className="ml-3 flex-1">
+                    <span className="block text-sm font-medium text-gray-700">Public</span>
+                    <span className="block text-sm text-gray-500 mt-1">Anyone with the link can view this list</span>
                   </div>
                 </label>
               </div>

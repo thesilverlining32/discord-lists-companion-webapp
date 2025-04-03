@@ -34,15 +34,7 @@
   animation: spin 1s linear infinite;
 }
 
-/* Selected state for permission and visibility options */
-input[type="radio"]:checked + div {
-  color: #0066cc;
-}
-
-label:has(input[type="radio"]:checked) {
-  border-color: #0066cc;
-  background-color: #f0f7ff;
-}
+/* Selected state for permission and visibility options is handled in the component with classes */
 
 /* Improve focus states for accessibility */
 input:focus,
