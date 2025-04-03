@@ -168,10 +168,21 @@
 	margin: 2rem 0;
 }
 
-/* Here's the fix to make the View List button always visible */
+/* Here's the fix to make the View List button always visible with a proper background */
 .card-footer-button {
 	opacity: 1 !important;
 	visibility: visible !important;
+	background-color: #f0f7ff !important; /* Light blue background */
+	border: 1px solid #0066cc !important; /* Blue border */
+	color: #0066cc !important; /* Blue text */
+	transition: all 0.2s ease !important;
+}
+
+/* Add hover effect for the buttons */
+.card-footer-button:hover {
+	background-color: #0066cc !important;
+	color: white !important;
+	transform: translateY(-1px) !important;
 }
 
 @media (max-width: 768px) {

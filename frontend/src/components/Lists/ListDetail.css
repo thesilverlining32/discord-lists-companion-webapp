@@ -63,12 +63,25 @@ button:hover {
 	margin-bottom: 20px;
 }
 
-/* Add this to make buttons in list detail always visible */
+/* Add this to make buttons in list detail always visible with proper styling */
 .action-button,
 .list-item-button,
 .card-button {
     opacity: 1 !important;
     visibility: visible !important;
+    background-color: #f0f7ff !important; /* Light blue background */
+    border: 1px solid #0066cc !important; /* Blue border */
+    color: #0066cc !important; /* Blue text */
+    transition: all 0.2s ease !important;
+}
+
+/* Add hover effect for the buttons */
+.action-button:hover,
+.list-item-button:hover,
+.card-button:hover {
+    background-color: #0066cc !important;
+    color: white !important;
+    transform: translateY(-1px) !important;
 }
 
 /* Make sure any buttons that appear on hover are always visible */
