@@ -26,8 +26,10 @@ const ListDetail = () => {
   const [userPermission, setUserPermission] = useState(null);
 
   useEffect(() => {
-    fetchListData();
-  }, [listId]);
+    if (user) {
+      fetchListData();
+    }
+  }, [listId, user]);
 
   const fetchListData = async () => {
     try {
@@ -38,12 +40,23 @@ const ListDetail = () => {
       ]);
 
       const listData = listResponse.data;
+
+      // Ensure consistent ID format
+      if (listData && listData.owner_id) {
+        listData.owner_id = String(listData.owner_id);
+      }
+
       setList(listData);
       setItems(itemsResponse.data || []);
 
       // Debug info
       console.log('List data:', listData);
       console.log('Current user:', user);
+      console.log('User ID type:', typeof user.id);
+      console.log('List owner_id type:', typeof listData.owner_id);
+      console.log('User ID:', user.id);
+      console.log('List owner_id:', listData.owner_id);
+      console.log('IDs match?', String(user.id) === String(listData.owner_id));
 
       // Determine user's permission level
       determineUserPermission(listData);
@@ -61,12 +74,14 @@ const ListDetail = () => {
     // Log for debugging
     console.log(`Checking permissions for list: ${listData.name}`);
     console.log(`List owner_id: ${listData.owner_id}, User id: ${user?.id}`);
+    console.log(`String comparison: "${String(listData.owner_id)}" === "${String(user?.id)}"`);
+    console.log(`Result: ${String(listData.owner_id) === String(user?.id)}`);
 
     // Default to no permission
     let permission = null;
 
-    // Check if user is the owner - this is the key comparison that must match
-    if (listData.owner_id === user.id) {
+    // Check if user is the owner - ensure string comparison
+    if (String(listData.owner_id) === String(user.id)) {
       console.log("User is the owner!");
       setUserPermission('owner');
       return;
@@ -77,9 +92,9 @@ const ListDetail = () => {
       permission = 'read';
     }
 
-    // Check shared permissions
+    // Check shared permissions - ensure string comparison
     const sharedWith = listData.shared_with || [];
-    const userPermissions = sharedWith.find(p => p.user_id === user.id);
+    const userPermissions = sharedWith.find(p => String(p.user_id) === String(user.id));
 
     if (userPermissions) {
       permission = userPermissions.permission_level;
@@ -138,11 +153,12 @@ const ListDetail = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-4">
-      {/* Debug info */}
+      {/* Debug info - hidden in production */}
       <div className="mb-4 p-2 bg-gray-100 rounded text-xs" style={{display: 'none'}}>
         <p>Debug: List owner_id: {list.owner_id}</p>
         <p>Debug: User id: {user.id}</p>
         <p>Debug: Permission: {userPermission}</p>
+        <p>Debug: IDs equal? {String(list.owner_id) === String(user.id) ? 'Yes' : 'No'}</p>
       </div>
 
       {/* Header Section */}

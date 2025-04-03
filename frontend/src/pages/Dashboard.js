@@ -16,8 +16,10 @@ const Dashboard = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchLists();
-  }, []);
+    if (user) {
+      fetchLists();
+    }
+  }, [user]);
 
   const fetchLists = async () => {
     try {
@@ -25,13 +27,28 @@ const Dashboard = () => {
       const response = await getLists();
       console.log('Fetched lists:', response.data);
 
-      // Log the current user ID for debugging
-      console.log('Current user ID:', user?.id);
-      response.data.forEach(list => {
-        console.log(`List ${list.name} owner_id: ${list.owner_id}`);
-      });
+      // Enhanced debugging information
+      console.log('Current user ID (from context):', user?.id);
+      console.log('User ID type:', typeof user?.id);
 
-      setLists(response.data);
+      if (response.data && Array.isArray(response.data)) {
+        // Process lists to ensure consistent ID format
+        const processedLists = response.data.map(list => {
+          // Log every list's owner ID for debugging
+          console.log(`List '${list.name}' owner_id:`, list.owner_id, 'type:', typeof list.owner_id);
+
+          // Ensure owner_id is a string for consistent comparison
+          return {
+            ...list,
+            owner_id: String(list.owner_id)
+          };
+        });
+
+        setLists(processedLists);
+      } else {
+        setLists([]);
+      }
+
       setError(null);
     } catch (err) {
       console.error('Error fetching lists:', err);
@@ -42,15 +59,17 @@ const Dashboard = () => {
   };
 
   const getListOwnershipStatus = (list) => {
-    // Log for debugging
+    // Enhanced logging for debugging
     console.log(`Checking ownership for list: ${list.name}`);
-    console.log(`List owner_id: ${list.owner_id}, User id: ${user.id}`);
+    console.log(`List owner_id (${typeof list.owner_id}): "${list.owner_id}"`);
+    console.log(`User id (${typeof user.id}): "${user.id}"`);
+    console.log(`Are IDs equal? ${list.owner_id === user.id}`);
 
-    if (list.owner_id === user.id) {
+    if (String(list.owner_id) === String(user.id)) {
       return 'owner';
     }
 
-    const isSharedWithUser = list.shared_with?.some(share => share.user_id === user.id);
+    const isSharedWithUser = list.shared_with?.some(share => String(share.user_id) === String(user.id));
     if (isSharedWithUser) {
       return 'shared';
     }
@@ -65,9 +84,21 @@ const Dashboard = () => {
   if (isLoading) return <div className="dashboard-loading">Loading your lists...</div>;
   if (error) return <div className="dashboard-error">{error}</div>;
 
-  // Important: Here's where we check for ownership - make sure IDs match exactly
-  const ownedLists = lists.filter(list => list.owner_id === user.id);
-  const sharedLists = lists.filter(list => list.owner_id !== user.id);
+  // Improved comparison with explicit string conversion
+  const ownedLists = lists.filter(list => String(list.owner_id) === String(user.id));
+  const sharedLists = lists.filter(list => String(list.owner_id) !== String(user.id));
+
+  // Additional debugging information
+  console.log('Owned lists count:', ownedLists.length);
+  console.log('Shared lists count:', sharedLists.length);
+
+  ownedLists.forEach(list => {
+    console.log(`Owned list: ${list.name}, owner_id: ${list.owner_id}`);
+  });
+
+  sharedLists.forEach(list => {
+    console.log(`Shared list: ${list.name}, owner_id: ${list.owner_id}`);
+  });
 
   return (
     <div className="dashboard">
@@ -83,6 +114,15 @@ const Dashboard = () => {
           </Button>
         </Link>
       </header>
+
+      {/* Debug information (hidden in production) */}
+      <div style={{ display: 'none', padding: '10px', background: '#f0f0f0', margin: '10px 0', fontSize: '12px' }}>
+        <p>User ID: {user.id}</p>
+        <p>Type: {typeof user.id}</p>
+        <p>Lists count: {lists.length}</p>
+        <p>Owned lists: {ownedLists.length}</p>
+        <p>Shared lists: {sharedLists.length}</p>
+      </div>
 
       {/* My Lists Section */}
       <section className="mb-10">
@@ -146,7 +186,7 @@ const Dashboard = () => {
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {sharedLists.map(list => {
               const ownershipStatus = getListOwnershipStatus(list);
-              const permissionLevel = list.shared_with?.find(share => share.user_id === user.id)?.permission_level;
+              const permissionLevel = list.shared_with?.find(share => String(share.user_id) === String(user.id))?.permission_level;
 
               return (
                 <Card key={list._id} className="h-full">

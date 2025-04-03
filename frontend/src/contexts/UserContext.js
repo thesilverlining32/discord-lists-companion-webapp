@@ -13,6 +13,25 @@ export const UserProvider = ({ children }) => {
     const loadUser = async () => {
       try {
         const userData = await getCurrentUser();
+
+        // Log the user data for debugging
+        console.log('Loaded user data:', userData);
+
+        // Ensure the _id field is mapped to id consistently
+        if (userData) {
+          // If the user data has _id but not id, add id property
+          if (userData._id && !userData.id) {
+            userData.id = userData._id;
+          }
+
+          // Ensure the ID is a string for consistent comparisons
+          if (userData.id) {
+            userData.id = String(userData.id);
+          }
+
+          console.log('Processed user data:', userData);
+        }
+
         setUser(userData);
       } catch (error) {
         console.error('Error loading user:', error);
