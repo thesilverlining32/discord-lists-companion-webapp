@@ -64,10 +64,10 @@ async def get_current_user(token: str = Depends(oauth2_scheme), request: Request
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    
+
     if request is None or not hasattr(request, 'app') or not hasattr(request.app, 'mongodb'):
         raise HTTPException(status_code=500, detail="Database connection not available")
-    
+
     db = request.app.mongodb
     user = await get_user_by_discord_id(db, discord_id)
     if user is None:
@@ -90,40 +90,40 @@ async def auth_callback(request: Request, code: str):
         "redirect_uri": settings.discord_redirect_uri,
     }
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
-    
+
     async with httpx.AsyncClient() as client:
         response = await client.post("https://discord.com/api/oauth2/token", data=data, headers=headers)
-    
+
     if response.status_code != 200:
         raise HTTPException(status_code=400, detail="Could not retrieve token")
-    
+
     token_data = response.json()
     access_token = token_data["access_token"]
-    
+
     async with httpx.AsyncClient() as client:
         response = await client.get(
             "https://discord.com/api/users/@me",
             headers={"Authorization": f"Bearer {access_token}"}
         )
-    
+
     if response.status_code != 200:
         raise HTTPException(status_code=400, detail="Could not retrieve user info")
-    
+
     user_data = response.json()
-    
+
     # Create or update user in the database
     user = await create_or_update_user(request.app.mongodb, user_data)
-    
+
     # Create access token for our app
     access_token = create_access_token(
         data={"sub": user.discord_id},
         expires_delta=timedelta(minutes=30)
     )
-    
+
     # After creating the access token
     frontend_url = settings.react_app_frontend_url
     redirect_url = f"{frontend_url}/auth/callback?token={access_token}"
-    
+
     return RedirectResponse(url=redirect_url)
 
 @router.get("/me")
@@ -135,12 +135,12 @@ async def read_users_me(request: Request, token: str = Depends(oauth2_scheme)):
             raise HTTPException(status_code=401, detail="Invalid authentication credentials")
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
-    
+
     user = await get_user_by_discord_id(request.app.mongodb, discord_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
-    
-    return user.model_dump(exclude={"id"})
+
+    return user.model_dump()
 
 # Example protected route
 @router.get("/protected")
