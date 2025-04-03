@@ -1,4 +1,4 @@
-// src/pages/Dashboard.js
+// src/pages/Dashboard.js - Updated version
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useUser } from '../contexts/UserContext';
@@ -115,15 +115,6 @@ const Dashboard = () => {
         </Link>
       </header>
 
-      {/* Debug information (hidden in production) */}
-      <div style={{ display: 'none', padding: '10px', background: '#f0f0f0', margin: '10px 0', fontSize: '12px' }}>
-        <p>User ID: {user.id}</p>
-        <p>Type: {typeof user.id}</p>
-        <p>Lists count: {lists.length}</p>
-        <p>Owned lists: {ownedLists.length}</p>
-        <p>Shared lists: {sharedLists.length}</p>
-      </div>
-
       {/* My Lists Section */}
       <section className="mb-10">
         <h2 className="text-xl font-semibold mb-4">My Lists</h2>
@@ -169,7 +160,8 @@ const Dashboard = () => {
                 </CardContent>
                 <CardFooter className="pt-0 justify-between">
                   <Link to={`/lists/${list._id}`}>
-                    <Button variant="outline" size="sm">View List</Button>
+                    {/* Added card-footer-button class to make button always visible */}
+                    <Button variant="outline" size="sm" className="card-footer-button">View List</Button>
                   </Link>
                   <Badge>Owner</Badge>
                 </CardFooter>
@@ -210,7 +202,8 @@ const Dashboard = () => {
                   </CardContent>
                   <CardFooter className="pt-0 justify-between">
                     <Link to={`/lists/${list._id}`}>
-                      <Button variant="outline" size="sm">View List</Button>
+                      {/* Added card-footer-button class to make button always visible */}
+                      <Button variant="outline" size="sm" className="card-footer-button">View List</Button>
                     </Link>
                     {ownershipStatus === 'shared' && permissionLevel && (
                       <Badge variant="secondary">

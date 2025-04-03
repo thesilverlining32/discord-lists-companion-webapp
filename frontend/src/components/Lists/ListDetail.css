@@ -1,62 +1,81 @@
+/* Update to frontend/src/components/Lists/ListDetail.css */
+
 .list-detail {
 	max-width: 800px;
 	margin: 0 auto;
 	padding: 20px;
-  }
+}
 
-  .list-detail h2 {
+.list-detail h2 {
 	color: #333;
 	margin-bottom: 10px;
-  }
+}
 
-  .list-detail p {
+.list-detail p {
 	color: #666;
 	margin-bottom: 20px;
-  }
+}
 
-  .list-items {
+.list-items {
 	list-style-type: none;
 	padding: 0;
-  }
+}
 
-  .list-item {
+.list-item {
 	background-color: #f9f9f9;
 	border: 1px solid #ddd;
 	border-radius: 4px;
 	padding: 15px;
 	margin-bottom: 10px;
-  }
+}
 
-  .list-item h4 {
+.list-item h4 {
 	color: #333;
 	margin-top: 0;
-  }
+}
 
-  form {
+form {
 	margin-bottom: 20px;
-  }
+}
 
-  input, select, button {
+input, select, button {
 	display: block;
 	width: 100%;
 	padding: 10px;
 	margin-bottom: 10px;
 	border: 1px solid #ddd;
 	border-radius: 4px;
-  }
+}
 
-  button {
+button {
 	background-color: #0066cc;
 	color: white;
 	border: none;
 	cursor: pointer;
-  }
+}
 
-  button:hover {
+button:hover {
 	background-color: #0052a3;
-  }
+}
 
-  .error-message {
+.error-message {
 	color: red;
 	margin-bottom: 20px;
-  }
+}
+
+/* Add this to make buttons in list detail always visible */
+.action-button,
+.list-item-button,
+.card-button {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Make sure any buttons that appear on hover are always visible */
+.button-container button,
+.item-controls button,
+.card-controls button {
+    opacity: 1 !important;
+    visibility: visible !important;
+    display: inline-flex !important;
+}
