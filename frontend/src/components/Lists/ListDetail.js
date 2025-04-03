@@ -235,7 +235,7 @@ const ListDetail = () => {
                         <Button
                           variant="ghost"
                           size="xs"
-                          className="text-gray-500 hover:text-gray-700"
+                          className="edit-button" // Add this class
                           title="Edit Item"
                         >
                           <Edit className="h-4 w-4" />
@@ -247,7 +247,7 @@ const ListDetail = () => {
                             <Button
                               variant="ghost"
                               size="xs"
-                              className="text-red-500 hover:text-red-700"
+                              className="delete-button" // Add this class
                               title="Delete Item"
                             >
                               <Trash className="h-4 w-4" />
@@ -261,10 +261,10 @@ const ListDetail = () => {
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogCancel className="cancel-button">Cancel</AlertDialogCancel> {/* Add this class */}
                               <AlertDialogAction
                                 onClick={() => handleDeleteItem(item._id)}
-                                className="bg-red-600 hover:bg-red-700"
+                                className="confirm-delete-button" // Add this class
                               >
                                 Delete
                               </AlertDialogAction>
