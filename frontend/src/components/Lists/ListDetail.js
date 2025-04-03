@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getList, getListItems, createListItem, updateListItem, deleteListItem } from '../../services/api';
 import AddItemDialog from './AddItemDialog';
+import EditItemDialog from './EditItemDialog'; // Import the new component
+import EditListDialog from './EditListDialog'; // Import the new component
 import ShareListDialog from './ShareListDialog';
 import { useUser } from '../../contexts/UserContext';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -10,7 +12,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
 import { Card, CardContent } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Share, Eye, Trash, Edit, Plus } from 'lucide-react';
+import { Share, Eye, Trash, Edit, Plus, PenSquare } from 'lucide-react';
 import './ListDetail.css';
 
 const ListDetail = () => {
@@ -23,7 +25,12 @@ const ListDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isEditListDialogOpen, setIsEditListDialogOpen] = useState(false); // New state
   const [userPermission, setUserPermission] = useState(null);
+
+  // Add new state for item editing
+  const [currentItem, setCurrentItem] = useState(null);
+  const [isEditItemDialogOpen, setIsEditItemDialogOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -115,6 +122,24 @@ const ListDetail = () => {
     }
   };
 
+  // Add handler for updating items
+  const handleUpdateItem = async (formData) => {
+    try {
+      const itemId = formData._id;
+      const response = await updateListItem(listId, itemId, formData);
+
+      // Update the items state with the updated item
+      setItems(prevItems =>
+        prevItems.map(item => item._id === itemId ? response.data : item)
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error('Error updating item:', error);
+      throw new Error(error.response?.data?.detail || 'Failed to update item');
+    }
+  };
+
   const handleDeleteItem = async (itemId) => {
     try {
       await deleteListItem(listId, itemId);
@@ -180,11 +205,24 @@ const ListDetail = () => {
           </div>
         </div>
         <div className="flex gap-2">
+          {/* Add Edit List button */}
+          {userPermission === 'owner' && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditListDialogOpen(true)}
+              className="action-button"
+            >
+              <PenSquare className="h-4 w-4 mr-2" />
+              Edit List
+            </Button>
+          )}
           {canShareList() && (
             <Button
               variant="outline"
               size="sm"
               onClick={() => setIsShareDialogOpen(true)}
+              className="action-button"
             >
               <Share className="h-4 w-4 mr-2" />
               Share
@@ -231,12 +269,17 @@ const ListDetail = () => {
                       </Badge>
                     </div>
                     <div className="flex gap-1">
+                      {/* Update the Edit button with onClick handler */}
                       {canEditItems() && (
                         <Button
                           variant="ghost"
                           size="xs"
-                          className="edit-button" // Add this class
+                          className="edit-button"
                           title="Edit Item"
+                          onClick={() => {
+                            setCurrentItem(item);
+                            setIsEditItemDialogOpen(true);
+                          }}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -247,7 +290,7 @@ const ListDetail = () => {
                             <Button
                               variant="ghost"
                               size="xs"
-                              className="delete-button" // Add this class
+                              className="delete-button"
                               title="Delete Item"
                             >
                               <Trash className="h-4 w-4" />
@@ -261,10 +304,10 @@ const ListDetail = () => {
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel className="cancel-button">Cancel</AlertDialogCancel> {/* Add this class */}
+                              <AlertDialogCancel className="cancel-button">Cancel</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => handleDeleteItem(item._id)}
-                                className="confirm-delete-button" // Add this class
+                                className="confirm-delete-button"
                               >
                                 Delete
                               </AlertDialogAction>
@@ -332,6 +375,27 @@ const ListDetail = () => {
         onClose={() => setIsShareDialogOpen(false)}
         onListUpdated={fetchListData}
       />
+
+      {/* Add Edit List Dialog */}
+      <EditListDialog
+        list={list}
+        isOpen={isEditListDialogOpen}
+        onClose={() => setIsEditListDialogOpen(false)}
+        onListUpdated={fetchListData}
+      />
+
+      {/* Add Edit Item Dialog */}
+      {currentItem && (
+        <EditItemDialog
+          item={currentItem}
+          isOpen={isEditItemDialogOpen}
+          onClose={() => {
+            setIsEditItemDialogOpen(false);
+            setCurrentItem(null);
+          }}
+          onSubmit={handleUpdateItem}
+        />
+      )}
     </div>
   );
 };
