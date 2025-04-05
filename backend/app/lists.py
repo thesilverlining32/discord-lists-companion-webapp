@@ -348,7 +348,7 @@ async def set_list_public(
 
 # List Items CRUD operations - Updated to check permissions
 
-@router.post("/lists/{list_id}/items", response_model=ListItemModel)
+@router.post("/lists/{list_id}/items", response_model=ListItemModel, status_code=status.HTTP_201_CREATED)
 async def create_list_item(
     list_id: str,
     item: ListItemModel,
@@ -363,10 +363,32 @@ async def create_list_item(
     if not has_permission:
         raise HTTPException(status_code=403, detail="User does not have permission to add items to this list")
 
-    item.list_id = list_id
-    result = await db.list_items.insert_one(item.dict(exclude={"id"}))
-    created_item = await db.list_items.find_one({"_id": result.inserted_id})
-    return ListItemModel(**created_item)
+    try:
+        # Get the maximum position value to append to the end
+        cursor = db.list_items.find({"list_id": list_id}).sort("position", -1).limit(1)
+        highest_items = await cursor.to_list(length=1)
+
+        max_position = 0
+        if highest_items:
+            max_position = highest_items[0].get("position", 0) + 1
+
+        # Set position and list_id
+        item.list_id = list_id
+        item.position = max_position
+
+        # Insert the item
+        item_dict = item.dict(exclude={"id"})
+        result = await db.list_items.insert_one(item_dict)
+        created_item = await db.list_items.find_one({"_id": result.inserted_id})
+
+        return ListItemModel(**created_item)
+    except Exception as e:
+        print(f"Error creating list item: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create list item: {str(e)}"
+        )
+
 
 @router.get("/lists/{list_id}/items", response_model=List[ListItemModel])
 async def get_list_items(
@@ -382,8 +404,18 @@ async def get_list_items(
     if not has_permission:
         raise HTTPException(status_code=403, detail="User does not have permission to view items in this list")
 
-    items = await db.list_items.find({"list_id": list_id}).to_list(length=None)
-    return [ListItemModel(**item_data) for item_data in items]
+    try:
+        # Get all items for this list and sort by position
+        cursor = db.list_items.find({"list_id": list_id}).sort("position", 1)
+        items = await cursor.to_list(length=None)
+
+        return [ListItemModel(**item_data) for item_data in items]
+    except Exception as e:
+        print(f"Error fetching list items: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch list items: {str(e)}"
+        )
 
 @router.put("/lists/{list_id}/items/{item_id}", response_model=ListItemModel)
 async def update_list_item(
@@ -427,12 +459,34 @@ async def delete_list_item(
     if not has_permission:
         raise HTTPException(status_code=403, detail="User does not have permission to delete items from this list")
 
-    delete_result = await db.list_items.delete_one({"_id": ObjectId(item_id), "list_id": list_id})
+    try:
+        # Find the item to get its position
+        item_to_delete = await db.list_items.find_one({"_id": ObjectId(item_id), "list_id": list_id})
+        if not item_to_delete:
+            raise HTTPException(status_code=404, detail="List item not found")
 
-    if delete_result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="List item not found")
+        item_position = item_to_delete.get("position", 0)
 
-    return
+        # Delete the item
+        delete_result = await db.list_items.delete_one({"_id": ObjectId(item_id), "list_id": list_id})
+        if delete_result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="List item not found")
+
+        # Update positions of all items that were after the deleted item
+        await db.list_items.update_many(
+            {"list_id": list_id, "position": {"$gt": item_position}},
+            {"$inc": {"position": -1}}
+        )
+
+        return
+    except Exception as e:
+        if not isinstance(e, HTTPException):
+            print(f"Error deleting list item: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to delete list item: {str(e)}"
+            )
+        raise e
 
 # Rating endpoint - with permission check
 
@@ -489,3 +543,80 @@ async def search_users(
     users = [user for user in users if str(user["_id"]) != str(current_user.id)]
 
     return [UserModel.from_mongo(user) for user in users]
+
+@router.put("/lists/{list_id}/items/reorder", response_model=List[ListItemModel])
+async def reorder_list_items(
+    list_id: str,
+    reorder_data: ReorderItemsRequest,
+    current_user: UserModel = Depends(get_current_user),
+    db: AsyncIOMotorClient = Depends(get_database)
+):
+    """
+    Reorder items in a list based on new positions
+    """
+    if not current_user.is_approved:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User is not approved to modify list items"
+        )
+
+    # Check if user has permission to edit the list
+    has_permission = await check_list_permissions(db, list_id, str(current_user.id), PermissionLevel.EDIT)
+    if not has_permission:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User does not have permission to reorder items in this list"
+        )
+
+    try:
+        # Validate the list exists
+        list_data = await db.lists.find_one({"_id": ObjectId(list_id)})
+        if not list_data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="List not found"
+            )
+
+        # Process each item in the reorder request
+        updated_items = []
+        for item_data in reorder_data.items:
+            try:
+                item_id_obj = ObjectId(item_data.id)
+            except:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Invalid item ID format: {item_data.id}"
+                )
+
+            # Verify the item exists and belongs to this list
+            item = await db.list_items.find_one({"_id": item_id_obj})
+            if not item:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Item {item_data.id} not found"
+                )
+            if item.get("list_id") != list_id:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Item {item_data.id} does not belong to list {list_id}"
+                )
+
+            # Update the item's position
+            await db.list_items.update_one(
+                {"_id": item_id_obj},
+                {"$set": {"position": item_data.position}}
+            )
+
+            # Get the updated item
+            updated_item = await db.list_items.find_one({"_id": item_id_obj})
+            updated_items.append(ListItemModel(**updated_item))
+
+        # Return the updated items sorted by position
+        return sorted(updated_items, key=lambda x: x.position)
+
+    except Exception as e:
+        print(f"Error reordering items: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to reorder items: {str(e)}"
+        )

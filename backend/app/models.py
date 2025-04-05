@@ -91,6 +91,7 @@ class ListItemModel(BaseModel):
     metadata: Optional[Dict[str, Any]] = None
     image_url: Optional[str] = None
     rating: Optional[int] = None
+    position: Optional[int] = 0  # Add position field with default value of 0
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -117,4 +118,16 @@ class ShareListRequest(BaseModel):
     model_config = ConfigDict(
         populate_by_name=True,
         use_enum_values=True
+    )
+
+# New model for reordering items
+class ItemOrderData(BaseModel):
+    id: str
+    position: int
+
+class ReorderItemsRequest(BaseModel):
+    items: List[ItemOrderData]
+
+    model_config = ConfigDict(
+        populate_by_name=True
     )
