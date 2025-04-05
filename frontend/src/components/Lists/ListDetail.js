@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getList, getListItems, createListItem, updateListItem, deleteListItem } from '../../services/api';
+import { getList, getListItems, createListItem, updateListItem, deleteListItem, rateListItem } from '../../services/api';
 import AddItemDialog from './AddItemDialog';
-import EditItemDialog from './EditItemDialog'; // Import the new component
-import EditListDialog from './EditListDialog'; // Import the new component
+import EditItemDialog from './EditItemDialog';
+import EditListDialog from './EditListDialog';
 import ShareListDialog from './ShareListDialog';
+import ItemDetailsDialog from './ItemDetailsDialog'; // Import the new component
 import { useUser } from '../../contexts/UserContext';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
          AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
@@ -12,8 +13,11 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
 import { Card, CardContent } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Share, Eye, Trash, Edit, Plus, PenSquare } from 'lucide-react';
+import { Share, Eye, Trash, Edit, Plus, PenSquare, Star } from 'lucide-react';
 import './ListDetail.css';
+
+// Import the custom style for list items
+import './ListItemStyles.css';
 
 const ListDetail = () => {
   const { listId } = useParams();
@@ -25,12 +29,16 @@ const ListDetail = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
-  const [isEditListDialogOpen, setIsEditListDialogOpen] = useState(false); // New state
+  const [isEditListDialogOpen, setIsEditListDialogOpen] = useState(false);
   const [userPermission, setUserPermission] = useState(null);
 
-  // Add new state for item editing
+  // Item editing state
   const [currentItem, setCurrentItem] = useState(null);
   const [isEditItemDialogOpen, setIsEditItemDialogOpen] = useState(false);
+
+  // Item details dialog state
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -122,7 +130,6 @@ const ListDetail = () => {
     }
   };
 
-  // Add handler for updating items
   const handleUpdateItem = async (formData) => {
     try {
       const itemId = formData._id;
@@ -150,6 +157,13 @@ const ListDetail = () => {
     }
   };
 
+  // Handler for when an item is updated from the details dialog
+  const handleItemUpdated = (updatedItem) => {
+    setItems(prevItems =>
+      prevItems.map(item => item._id === updatedItem._id ? updatedItem : item)
+    );
+  };
+
   const canCreateItems = () => {
     return userPermission === 'owner' ||
            userPermission === 'delete' ||
@@ -170,6 +184,12 @@ const ListDetail = () => {
 
   const canShareList = () => {
     return userPermission === 'owner';
+  };
+
+  const canRateItems = () => {
+    return userPermission === 'owner' ||
+           userPermission === 'delete' ||
+           userPermission === 'edit';
   };
 
   if (isLoading) return <div className="p-6 text-center">Loading...</div>;
@@ -205,7 +225,6 @@ const ListDetail = () => {
           </div>
         </div>
         <div className="flex gap-2">
-          {/* Add Edit List button */}
           {userPermission === 'owner' && (
             <Button
               variant="outline"
@@ -238,7 +257,7 @@ const ListDetail = () => {
         </div>
       )}
 
-      {/* Items List Section */}
+      {/* Items List Section - Now using a list layout instead of grid */}
       <div>
         <h2 className="text-xl font-semibold mb-4">Items</h2>
         {items.length === 0 ? (
@@ -257,26 +276,60 @@ const ListDetail = () => {
             )}
           </div>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-3">
             {items.map(item => (
-              <Card key={item._id} className="overflow-hidden">
-                <CardContent className="p-4">
-                  <div className="flex justify-between items-start mb-2">
+              <div
+                key={item._id}
+                className="border rounded-lg hover:border-blue-300 transition-colors cursor-pointer"
+                onClick={() => {
+                  setSelectedItem(item);
+                  setIsDetailsDialogOpen(true);
+                }}
+              >
+                <div className="p-4 flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    {item.image_url && (
+                      <div className="h-12 w-12 flex-shrink-0 rounded overflow-hidden">
+                        <img src={item.image_url} alt="" className="h-full w-full object-cover" />
+                      </div>
+                    )}
                     <div>
-                      <h3 className="text-lg font-semibold">{item.title}</h3>
-                      <Badge variant="secondary" className="mt-1">
-                        {item.type}
-                      </Badge>
+                      <h3 className="font-medium">{item.title}</h3>
+                      <div className="flex items-center mt-1 space-x-2">
+                        <Badge variant="secondary" className="text-xs">{item.type}</Badge>
+                        {item.metadata?.creator && (
+                          <span className="text-sm text-gray-500">{item.metadata.creator}</span>
+                        )}
+                        {item.metadata?.year && (
+                          <span className="text-sm text-gray-500">{item.metadata.year}</span>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex gap-1">
-                      {/* Update the Edit button with onClick handler */}
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    {/* Rating display */}
+                    {item.rating ? (
+                      <div className="flex items-center px-2 py-1 bg-gray-100 rounded-md">
+                        <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 mr-1" />
+                        <span className="text-sm">{item.rating}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center px-2 py-1 bg-gray-100 rounded-md text-gray-400">
+                        <Star className="h-4 w-4 mr-1" />
+                        <span className="text-sm">Rate</span>
+                      </div>
+                    )}
+
+                    {/* Item actions */}
+                    <div className="flex space-x-1" onClick={e => e.stopPropagation()}>
                       {canEditItems() && (
                         <Button
                           variant="ghost"
-                          size="xs"
-                          className="edit-button"
-                          title="Edit Item"
-                          onClick={() => {
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setCurrentItem(item);
                             setIsEditItemDialogOpen(true);
                           }}
@@ -289,9 +342,9 @@ const ListDetail = () => {
                           <AlertDialogTrigger asChild>
                             <Button
                               variant="ghost"
-                              size="xs"
-                              className="delete-button"
-                              title="Delete Item"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={(e) => e.stopPropagation()}
                             >
                               <Trash className="h-4 w-4" />
                             </Button>
@@ -317,52 +370,8 @@ const ListDetail = () => {
                       )}
                     </div>
                   </div>
-
-                  {item.description && (
-                    <p className="text-gray-600 mb-2">{item.description}</p>
-                  )}
-
-                  {item.image_url && (
-                    <div className="relative h-48 mb-2">
-                      <img
-                        src={item.image_url}
-                        alt={item.title}
-                        className="absolute inset-0 w-full h-full object-cover rounded"
-                      />
-                    </div>
-                  )}
-
-                  {item.metadata && Object.keys(item.metadata).length > 0 && (
-                    <div className="text-sm text-gray-500 mt-2 space-y-1">
-                      {item.metadata.creator && (
-                        <p>Creator: {item.metadata.creator}</p>
-                      )}
-                      {item.metadata.year && (
-                        <p>Year: {item.metadata.year}</p>
-                      )}
-                      {item.metadata.genre && (
-                        <p>Genre: {item.metadata.genre}</p>
-                      )}
-                    </div>
-                  )}
-
-                  {item.rating && (
-                    <div className="mt-2 flex items-center">
-                      <span className="text-sm text-gray-500 mr-1">Rating:</span>
-                      <div className="flex">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <span
-                            key={star}
-                            className={`text-lg ${star <= item.rating ? 'text-yellow-500' : 'text-gray-300'}`}
-                          >
-                            ★
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -376,7 +385,7 @@ const ListDetail = () => {
         onListUpdated={fetchListData}
       />
 
-      {/* Add Edit List Dialog */}
+      {/* Edit List Dialog */}
       <EditListDialog
         list={list}
         isOpen={isEditListDialogOpen}
@@ -384,7 +393,7 @@ const ListDetail = () => {
         onListUpdated={fetchListData}
       />
 
-      {/* Add Edit Item Dialog */}
+      {/* Edit Item Dialog */}
       {currentItem && (
         <EditItemDialog
           item={currentItem}
@@ -394,6 +403,19 @@ const ListDetail = () => {
             setCurrentItem(null);
           }}
           onSubmit={handleUpdateItem}
+        />
+      )}
+
+      {/* Item Details Dialog */}
+      {selectedItem && (
+        <ItemDetailsDialog
+          item={selectedItem}
+          isOpen={isDetailsDialogOpen}
+          onClose={() => {
+            setIsDetailsDialogOpen(false);
+            setSelectedItem(null);
+          }}
+          onItemUpdated={handleItemUpdated}
         />
       )}
     </div>
