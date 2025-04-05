@@ -343,11 +343,13 @@ const ListDetail = () => {
         setIsOrderChanged(true);
 
         try {
-          // Prepare data for the API
+          // Prepare data for the API - ensure we're sending strings for IDs
           const itemOrderData = updatedItems.map((item, index) => ({
-            id: item._id,
+            id: String(item._id),
             position: index
           }));
+
+          console.log('Preparing to send order data:', itemOrderData);
 
           // Send the updated order to the backend
           await updateItemsOrder(listId, itemOrderData);

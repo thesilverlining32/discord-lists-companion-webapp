@@ -120,14 +120,21 @@ class ShareListRequest(BaseModel):
         use_enum_values=True
     )
 
-# New model for reordering items
 class ItemOrderData(BaseModel):
     id: str
     position: int
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_encoders={ObjectId: str}
+    )
 
 class ReorderItemsRequest(BaseModel):
     items: List[ItemOrderData]
 
     model_config = ConfigDict(
-        populate_by_name=True
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_encoders={ObjectId: str}
     )

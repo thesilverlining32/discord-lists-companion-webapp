@@ -564,6 +564,10 @@ async def reorder_list_items(
     """
     Reorder items in a list based on new positions
     """
+    # Add detailed logging
+    print(f"Received reorder request for list {list_id}")
+    print(f"Reorder data: {reorder_data}")
+
     if not current_user.is_approved:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -589,10 +593,14 @@ async def reorder_list_items(
 
         # Process each item in the reorder request
         updated_items = []
+        print(f"Processing {len(reorder_data.items)} items")
+
         for item_data in reorder_data.items:
             try:
+                print(f"Processing item: id={item_data.id}, position={item_data.position}")
                 item_id_obj = ObjectId(item_data.id)
-            except:
+            except Exception as e:
+                print(f"Invalid ID format: {item_data.id}. Error: {str(e)}")
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Invalid item ID format: {item_data.id}"
@@ -601,17 +609,21 @@ async def reorder_list_items(
             # Verify the item exists and belongs to this list
             item = await db.list_items.find_one({"_id": item_id_obj})
             if not item:
+                print(f"Item not found: {item_data.id}")
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"Item {item_data.id} not found"
                 )
+
             if item.get("list_id") != list_id:
+                print(f"Item {item_data.id} belongs to list {item.get('list_id')}, not {list_id}")
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Item {item_data.id} does not belong to list {list_id}"
                 )
 
             # Update the item's position
+            print(f"Updating position for item {item_data.id} to {item_data.position}")
             await db.list_items.update_one(
                 {"_id": item_id_obj},
                 {"$set": {"position": item_data.position}}
@@ -622,7 +634,9 @@ async def reorder_list_items(
             updated_items.append(ListItemModel(**updated_item))
 
         # Return the updated items sorted by position
-        return sorted(updated_items, key=lambda x: x.position)
+        result = sorted(updated_items, key=lambda x: x.position)
+        print(f"Returning {len(result)} updated items")
+        return result
 
     except Exception as e:
         print(f"Error reordering items: {str(e)}")

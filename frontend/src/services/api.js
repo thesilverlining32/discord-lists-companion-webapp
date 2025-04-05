@@ -128,12 +128,18 @@ export const setListPublic = (listId, isPublic) => apiClient.put(`/lists/${listI
  */
 export const updateItemsOrder = async (listId, itemOrderData) => {
   try {
+    console.log('Sending reorder data:', { items: itemOrderData });
     const response = await apiClient.put(`/lists/${listId}/items/reorder`, {
       items: itemOrderData
     });
     return response.data;
   } catch (error) {
     console.error('Error updating item order:', error);
+    // Log more detailed error information
+    if (error.response) {
+      console.error('Error response:', error.response.data);
+      console.error('Status code:', error.response.status);
+    }
     throw new Error(error.response?.data?.detail || 'Failed to update item order');
   }
 };
