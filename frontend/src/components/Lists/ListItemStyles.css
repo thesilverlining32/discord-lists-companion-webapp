@@ -150,3 +150,82 @@
   .list-item-container:hover {
     animation: pulse 1.5s infinite;
   }
+
+/* Drag handle styles */
+.drag-handle {
+  touch-action: none; /* Improves performance on touch devices */
+  opacity: 0.5;
+  transition: opacity 0.2s ease;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+}
+
+.drag-handle:hover {
+  opacity: 1;
+  background-color: #f3f4f6;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+  background-color: #e5e7eb;
+}
+
+/* Item being dragged */
+.dragging {
+  opacity: 0.8;
+  z-index: 999;
+  background-color: #f8fafc;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border-color: #3b82f6;
+}
+
+/* Drop indicator  */
+.drop-indicator {
+  height: 2px;
+  margin: 4px 0;
+  background-color: #3b82f6;
+  animation: pulse 1.5s infinite;
+}
+
+/* Drag animation */
+@keyframes dragging-animation {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(0.5deg);
+  }
+  75% {
+    transform: rotate(-0.5deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.dragging {
+  animation: dragging-animation 0.3s infinite;
+}
+
+/* Order changed notification */
+.order-changed-badge {
+  background-color: #3b82f6;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: opacity 0.5s ease;
+  animation: fadeInOut 2s infinite;
+}
+
+@keyframes fadeInOut {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}

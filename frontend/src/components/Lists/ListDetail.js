@@ -1,23 +1,143 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getList, getListItems, createListItem, updateListItem, deleteListItem, rateListItem } from '../../services/api';
+import { getList, getListItems, createListItem, updateListItem, deleteListItem, updateItemsOrder } from '../../services/api';
 import AddItemDialog from './AddItemDialog';
 import EditItemDialog from './EditItemDialog';
 import EditListDialog from './EditListDialog';
 import ShareListDialog from './ShareListDialog';
-import ItemDetailsDialog from './ItemDetailsDialog'; // Import the new component
+import ItemDetailsDialog from './ItemDetailsDialog';
 import { useUser } from '../../contexts/UserContext';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
          AlertDialogDescription, AlertDialogFooter, AlertDialogHeader,
          AlertDialogTitle, AlertDialogTrigger } from '../../components/ui/alert-dialog';
-import { Card, CardContent } from '../../components/ui/card';
-import { Badge } from '../../components/ui/badge';
 import { Button } from '../../components/ui/button';
-import { Share, Eye, Trash, Edit, Plus, PenSquare, Star } from 'lucide-react';
+import { Badge } from '../../components/ui/badge';
+import { Share, Trash, Edit, Plus, PenSquare, Star, GripVertical } from 'lucide-react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import './ListDetail.css';
-
-// Import the custom style for list items
 import './ListItemStyles.css';
+
+// Sortable item component
+const SortableItem = ({
+  item,
+  canEdit,
+  canDelete,
+  onEdit,
+  onDelete,
+  onClick
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({id: item._id});
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="list-item-container"
+    >
+      <div className="list-item-content" onClick={onClick}>
+        <div className="flex items-center">
+          {canEdit && (
+            <div
+              className="drag-handle mr-2 cursor-grab active:cursor-grabbing"
+              {...attributes}
+              {...listeners}
+            >
+              <GripVertical className="h-5 w-5 text-gray-400" />
+            </div>
+          )}
+
+          {item.image_url && (
+            <div className="item-thumbnail">
+              <img src={item.image_url} alt="" />
+            </div>
+          )}
+
+          <div className="item-info">
+            <h3 className="item-title">{item.title}</h3>
+            <div className="item-meta">
+              <Badge variant="secondary" className="text-xs">{item.type}</Badge>
+              {item.metadata?.creator && (
+                <span className="text-sm text-gray-500">{item.metadata.creator}</span>
+              )}
+              {item.metadata?.year && (
+                <span className="text-sm text-gray-500">{item.metadata.year}</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          {/* Rating display */}
+          <div className={`rating-display ${item.rating ? 'has-rating' : 'no-rating'}`}>
+            <Star className={`h-4 w-4 mr-1 ${item.rating ? 'text-yellow-400 fill-yellow-400' : ''}`} />
+            <span className="text-sm">{item.rating || 'Rate'}</span>
+          </div>
+
+          {/* Item actions */}
+          <div className="item-actions" onClick={e => e.stopPropagation()}>
+            {canEdit && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(item);
+                }}
+              >
+                <Edit className="h-4 w-4" />
+              </Button>
+            )}
+            {canDelete && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Item</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete "{item.title}"? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel className="cancel-button">Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => onDelete(item._id)}
+                      className="confirm-delete-button"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ListDetail = () => {
   const { listId } = useParams();
@@ -31,14 +151,23 @@ const ListDetail = () => {
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [isEditListDialogOpen, setIsEditListDialogOpen] = useState(false);
   const [userPermission, setUserPermission] = useState(null);
-
-  // Item editing state
   const [currentItem, setCurrentItem] = useState(null);
   const [isEditItemDialogOpen, setIsEditItemDialogOpen] = useState(false);
-
-  // Item details dialog state
   const [selectedItem, setSelectedItem] = useState(null);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+  const [isOrderChanged, setIsOrderChanged] = useState(false);
+
+  // Configure DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Start dragging after moving 8px - prevents accidental drags
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     if (user) {
@@ -62,20 +191,20 @@ const ListDetail = () => {
       }
 
       setList(listData);
-      setItems(itemsResponse.data || []);
 
-      // Debug info
-      console.log('List data:', listData);
-      console.log('Current user:', user);
-      console.log('User ID type:', typeof user.id);
-      console.log('List owner_id type:', typeof listData.owner_id);
-      console.log('User ID:', user.id);
-      console.log('List owner_id:', listData.owner_id);
-      console.log('IDs match?', String(user.id) === String(listData.owner_id));
+      // Sort items by position/order if available, otherwise preserve API order
+      const sortedItems = itemsResponse.data || [];
+      // Add position attribute if not present
+      const itemsWithPosition = sortedItems.map((item, index) => ({
+        ...item,
+        position: item.position ?? index
+      }));
 
-      // Determine user's permission level
+      // Sort by position
+      itemsWithPosition.sort((a, b) => a.position - b.position);
+
+      setItems(itemsWithPosition);
       determineUserPermission(listData);
-
       setError(null);
     } catch (err) {
       setError('Failed to fetch list details. Please try again.');
@@ -86,18 +215,11 @@ const ListDetail = () => {
   };
 
   const determineUserPermission = (listData) => {
-    // Log for debugging
-    console.log(`Checking permissions for list: ${listData.name}`);
-    console.log(`List owner_id: ${listData.owner_id}, User id: ${user?.id}`);
-    console.log(`String comparison: "${String(listData.owner_id)}" === "${String(user?.id)}"`);
-    console.log(`Result: ${String(listData.owner_id) === String(user?.id)}`);
-
     // Default to no permission
     let permission = null;
 
-    // Check if user is the owner - ensure string comparison
+    // Check if user is the owner
     if (String(listData.owner_id) === String(user.id)) {
-      console.log("User is the owner!");
       setUserPermission('owner');
       return;
     }
@@ -107,7 +229,7 @@ const ListDetail = () => {
       permission = 'read';
     }
 
-    // Check shared permissions - ensure string comparison
+    // Check shared permissions
     const sharedWith = listData.shared_with || [];
     const userPermissions = sharedWith.find(p => String(p.user_id) === String(user.id));
 
@@ -115,14 +237,24 @@ const ListDetail = () => {
       permission = userPermissions.permission_level;
     }
 
-    console.log(`Setting user permission to: ${permission}`);
     setUserPermission(permission);
   };
 
   const handleCreateItem = async (formData) => {
     try {
-      const response = await createListItem(listId, formData);
-      setItems(prevItems => [...prevItems, response.data]);
+      // Set position to be at the end of the list
+      const position = items.length > 0
+        ? Math.max(...items.map(item => item.position || 0)) + 1
+        : 0;
+
+      const itemWithPosition = {
+        ...formData,
+        position
+      };
+
+      const response = await createListItem(listId, itemWithPosition);
+      const newItem = { ...response.data, position };
+      setItems(prevItems => [...prevItems, newItem]);
       return response.data;
     } catch (error) {
       console.error('Error creating item:', error);
@@ -137,7 +269,7 @@ const ListDetail = () => {
 
       // Update the items state with the updated item
       setItems(prevItems =>
-        prevItems.map(item => item._id === itemId ? response.data : item)
+        prevItems.map(item => item._id === itemId ? {...response.data, position: item.position} : item)
       );
 
       return response.data;
@@ -150,18 +282,84 @@ const ListDetail = () => {
   const handleDeleteItem = async (itemId) => {
     try {
       await deleteListItem(listId, itemId);
-      setItems(prevItems => prevItems.filter(item => item._id !== itemId));
+
+      // Remove the item and update positions
+      const updatedItems = items
+        .filter(item => item._id !== itemId)
+        .map((item, index) => ({
+          ...item,
+          position: index
+        }));
+
+      setItems(updatedItems);
+
+      // Update positions in the backend
+      await updateItemsOrder(
+        listId,
+        updatedItems.map((item, index) => ({
+          id: item._id,
+          position: index
+        }))
+      );
     } catch (error) {
       console.error('Error deleting item:', error);
       throw new Error(error.response?.data?.detail || 'Failed to delete item');
     }
   };
 
-  // Handler for when an item is updated from the details dialog
   const handleItemUpdated = (updatedItem) => {
     setItems(prevItems =>
-      prevItems.map(item => item._id === updatedItem._id ? updatedItem : item)
+      prevItems.map(item =>
+        item._id === updatedItem._id
+          ? {...updatedItem, position: item.position}
+          : item
+      )
     );
+  };
+
+  // Handle drag end event
+  const handleDragEnd = async (event) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      // Find the indices of the dragged item and the target position
+      const oldIndex = items.findIndex(item => item._id === active.id);
+      const newIndex = items.findIndex(item => item._id === over.id);
+
+      if (oldIndex !== -1 && newIndex !== -1) {
+        // Create a new array with the updated order
+        const newItems = [...items];
+        const [movedItem] = newItems.splice(oldIndex, 1);
+        newItems.splice(newIndex, 0, movedItem);
+
+        // Update positions on all items
+        const updatedItems = newItems.map((item, index) => ({
+          ...item,
+          position: index
+        }));
+
+        // Update the state immediately for better UX
+        setItems(updatedItems);
+        setIsOrderChanged(true);
+
+        try {
+          // Prepare data for the API
+          const itemOrderData = updatedItems.map((item, index) => ({
+            id: item._id,
+            position: index
+          }));
+
+          // Send the updated order to the backend
+          await updateItemsOrder(listId, itemOrderData);
+          setIsOrderChanged(false);
+        } catch (error) {
+          console.error('Error updating item order:', error);
+          // If there's an error, revert to the original order
+          fetchListData();
+          setIsOrderChanged(false);
+        }
+      }
+    }
   };
 
   const canCreateItems = () => {
@@ -186,7 +384,7 @@ const ListDetail = () => {
     return userPermission === 'owner';
   };
 
-  const canRateItems = () => {
+  const canReorderItems = () => {
     return userPermission === 'owner' ||
            userPermission === 'delete' ||
            userPermission === 'edit';
@@ -198,14 +396,6 @@ const ListDetail = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-4">
-      {/* Debug info - hidden in production */}
-      <div className="mb-4 p-2 bg-gray-100 rounded text-xs" style={{display: 'none'}}>
-        <p>Debug: List owner_id: {list.owner_id}</p>
-        <p>Debug: User id: {user.id}</p>
-        <p>Debug: Permission: {userPermission}</p>
-        <p>Debug: IDs equal? {String(list.owner_id) === String(user.id) ? 'Yes' : 'No'}</p>
-      </div>
-
       {/* Header Section */}
       <div className="flex justify-between items-start mb-8">
         <div>
@@ -257,17 +447,23 @@ const ListDetail = () => {
         </div>
       )}
 
-      {/* Items List Section - Now using a list layout instead of grid */}
+      {/* Items List Section with Drag and Drop */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Items</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Items</h2>
+          {isOrderChanged && (
+            <Badge className="bg-blue-500">Order updated</Badge>
+          )}
+        </div>
+
         {items.length === 0 ? (
-          <div className="text-center py-8 bg-gray-50 rounded-lg">
-            <p className="text-gray-600">No items in this list yet.</p>
+          <div className="empty-state">
+            <div className="empty-state-icon">📝</div>
+            <p className="empty-state-text">No items in this list yet.</p>
             {canCreateItems() && (
               <Button
                 variant="outline"
                 size="sm"
-                className="mt-2"
                 onClick={() => document.querySelector('[data-dialog-trigger="add-item"]')?.click()}
               >
                 <Plus className="h-4 w-4 mr-2" />
@@ -276,103 +472,43 @@ const ListDetail = () => {
             )}
           </div>
         ) : (
-          <div className="space-y-3">
-            {items.map(item => (
-              <div
-                key={item._id}
-                className="border rounded-lg hover:border-blue-300 transition-colors cursor-pointer"
-                onClick={() => {
-                  setSelectedItem(item);
-                  setIsDetailsDialogOpen(true);
-                }}
-              >
-                <div className="p-4 flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    {item.image_url && (
-                      <div className="h-12 w-12 flex-shrink-0 rounded overflow-hidden">
-                        <img src={item.image_url} alt="" className="h-full w-full object-cover" />
-                      </div>
-                    )}
-                    <div>
-                      <h3 className="font-medium">{item.title}</h3>
-                      <div className="flex items-center mt-1 space-x-2">
-                        <Badge variant="secondary" className="text-xs">{item.type}</Badge>
-                        {item.metadata?.creator && (
-                          <span className="text-sm text-gray-500">{item.metadata.creator}</span>
-                        )}
-                        {item.metadata?.year && (
-                          <span className="text-sm text-gray-500">{item.metadata.year}</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    {/* Rating display */}
-                    {item.rating ? (
-                      <div className="flex items-center px-2 py-1 bg-gray-100 rounded-md">
-                        <Star className="h-4 w-4 text-yellow-400 fill-yellow-400 mr-1" />
-                        <span className="text-sm">{item.rating}</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center px-2 py-1 bg-gray-100 rounded-md text-gray-400">
-                        <Star className="h-4 w-4 mr-1" />
-                        <span className="text-sm">Rate</span>
-                      </div>
-                    )}
-
-                    {/* Item actions */}
-                    <div className="flex space-x-1" onClick={e => e.stopPropagation()}>
-                      {canEditItems() && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setCurrentItem(item);
-                            setIsEditItemDialogOpen(true);
-                          }}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {canDeleteItems() && (
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <Trash className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete Item</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to delete "{item.title}"? This action cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel className="cancel-button">Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDeleteItem(item._id)}
-                                className="confirm-delete-button"
-                              >
-                                Delete
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      )}
-                    </div>
-                  </div>
-                </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={items.map(item => item._id)}
+              strategy={verticalListSortingStrategy}
+              disabled={!canReorderItems()}
+            >
+              <div className="space-y-0">
+                {items.map((item) => (
+                  <SortableItem
+                    key={item._id}
+                    item={item}
+                    canEdit={canEditItems()}
+                    canDelete={canDeleteItems()}
+                    onEdit={(item) => {
+                      setCurrentItem(item);
+                      setIsEditItemDialogOpen(true);
+                    }}
+                    onDelete={handleDeleteItem}
+                    onClick={() => {
+                      setSelectedItem(item);
+                      setIsDetailsDialogOpen(true);
+                    }}
+                  />
+                ))}
               </div>
-            ))}
+            </SortableContext>
+          </DndContext>
+        )}
+
+        {canReorderItems() && items.length > 1 && (
+          <div className="mt-3 text-sm text-gray-500 flex items-center">
+            <GripVertical className="h-4 w-4 mr-1" />
+            <span>Drag items to reorder</span>
           </div>
         )}
       </div>

@@ -119,3 +119,21 @@ export const getListShares = (listId) => apiClient.get(`/lists/${listId}/share`)
 export const removeListShare = (listId, userId) => apiClient.delete(`/lists/${listId}/share/${userId}`);
 
 export const setListPublic = (listId, isPublic) => apiClient.put(`/lists/${listId}/public?is_public=${isPublic}`);
+
+/**
+ * Updates the order of list items
+ * @param {string} listId - The ID of the list
+ * @param {Array} itemOrderData - Array of objects with item IDs and their new positions
+ * @returns {Promise} - Promise resolving to the API response
+ */
+export const updateItemsOrder = async (listId, itemOrderData) => {
+  try {
+    const response = await apiClient.put(`/lists/${listId}/items/reorder`, {
+      items: itemOrderData
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error updating item order:', error);
+    throw new Error(error.response?.data?.detail || 'Failed to update item order');
+  }
+};
