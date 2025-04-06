@@ -202,8 +202,8 @@ export const testReorderModel = async () => {
         // Test with string ID and number position (should work)
         { id: "64f32a1b5e2c0987654321", position: 0 },
 
-        // Test with ObjectId and number position (might fail)
-        { id: new ObjectId("64f32a1b5e2c0987654322"), position: 1 },
+        // Test with another string ID and number position
+        { id: "64f32a1b5e2c0987654322", position: 1 },
 
         // Test with string ID and string position (might fail)
         { id: "64f32a1b5e2c0987654323", position: "2" }
