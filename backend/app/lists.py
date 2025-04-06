@@ -557,32 +557,48 @@ async def search_users(
 @router.put("/lists/{list_id}/items/reorder", response_model=List[ListItemModel])
 async def reorder_list_items(
     list_id: str,
-    reorder_data: ReorderItemsRequest,
+    request: Request,  # Add raw request parameter
     current_user: UserModel = Depends(get_current_user),
     db: AsyncIOMotorClient = Depends(get_database)
 ):
     """
     Reorder items in a list based on new positions
     """
-    # Add detailed logging
-    print(f"Received reorder request for list {list_id}")
-    print(f"Reorder data: {reorder_data}")
-
-    if not current_user.is_approved:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User is not approved to modify list items"
-        )
-
-    # Check if user has permission to edit the list
-    has_permission = await check_list_permissions(db, list_id, str(current_user.id), PermissionLevel.EDIT)
-    if not has_permission:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User does not have permission to reorder items in this list"
-        )
+    # Log the raw request body for debugging
+    raw_body = await request.body()
+    print(f"Raw request body: {raw_body}")
 
     try:
+        # Parse the request body manually for better error handling
+        body_json = await request.json()
+        print(f"Parsed JSON: {body_json}")
+
+        # Try to validate against the model
+        try:
+            reorder_data = ReorderItemsRequest(**body_json)
+            print(f"Validated reorder data: {reorder_data}")
+        except Exception as e:
+            print(f"Validation error: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Validation error: {str(e)}"
+            )
+
+        # Rest of the function remains the same - permissions check, etc.
+        if not current_user.is_approved:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User is not approved to modify list items"
+            )
+
+        # Check if user has permission to edit the list
+        has_permission = await check_list_permissions(db, list_id, str(current_user.id), PermissionLevel.EDIT)
+        if not has_permission:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User does not have permission to reorder items in this list"
+            )
+
         # Validate the list exists
         list_data = await db.lists.find_one({"_id": ObjectId(list_id)})
         if not list_data:

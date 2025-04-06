@@ -128,10 +128,16 @@ export const setListPublic = (listId, isPublic) => apiClient.put(`/lists/${listI
  */
 export const updateItemsOrder = async (listId, itemOrderData) => {
   try {
-    console.log('Sending reorder data:', { items: itemOrderData });
-    const response = await apiClient.put(`/lists/${listId}/items/reorder`, {
-      items: itemOrderData
-    });
+    // Ensure we're sending the proper data structure with correct types
+    const payload = {
+      items: itemOrderData.map(item => ({
+        id: String(item.id), // Ensure ID is a string
+        position: Number(item.position) // Ensure position is a number
+      }))
+    };
+
+    console.log('Sending reorder data:', JSON.stringify(payload));
+    const response = await apiClient.put(`/lists/${listId}/items/reorder`, payload);
     return response.data;
   } catch (error) {
     console.error('Error updating item order:', error);
@@ -139,6 +145,10 @@ export const updateItemsOrder = async (listId, itemOrderData) => {
     if (error.response) {
       console.error('Error response:', error.response.data);
       console.error('Status code:', error.response.status);
+      // Log detailed validation errors if present
+      if (error.response.data?.detail) {
+        console.error('Validation errors:', error.response.data.detail);
+      }
     }
     throw new Error(error.response?.data?.detail || 'Failed to update item order');
   }
