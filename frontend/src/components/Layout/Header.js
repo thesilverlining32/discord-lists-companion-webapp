@@ -39,20 +39,6 @@ const Header = () => {
                 {menuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
 
-              <div className="flex space-x-2 mb-4">
-                {/* Only show in development environment */}
-                {process.env.NODE_ENV === 'development' && (
-                  <>
-                    <Button onClick={runModelTest} size="sm" variant="outline">
-                      Test Model
-                    </Button>
-                    <Button onClick={runSimpleModelTest} size="sm" variant="outline">
-                      Run Simple Test
-                    </Button>
-                  </>
-                )}
-              </div>
-
               <nav className={`nav-menu ${menuOpen ? 'open' : ''}`}>
                 <ul className="nav-links">
                   <li>
