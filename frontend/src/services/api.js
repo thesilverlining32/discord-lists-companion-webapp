@@ -131,36 +131,27 @@ export const updateItemsOrder = async (listId, itemOrderData) => {
     // Debug logging before any transformations
     console.log('Original itemOrderData:', itemOrderData);
 
-    // Ensure each ID is a string and position is a number
+    // IMPORTANT: Using camelCase 'item_id' instead of 'id' to match the backend model
+    // This is likely the source of our validation errors
     const formattedData = itemOrderData.map(item => ({
-      id: String(item.id),
+      item_id: String(item.id),  // Changed from 'id' to 'item_id'
       position: Number(item.position)
     }));
 
     // Log the formatted data
-    console.log('Formatted itemOrderData:', formattedData);
+    console.log('Formatted itemOrderData with correct field names:', formattedData);
 
-    // Create the payload explicitly according to the expected structure
+    // Create the payload with the correctly named fields
     const payload = {
       items: formattedData
     };
 
-    // Log the final payload object and its stringified version
-    console.log('Final payload object:', payload);
+    // Log the final payload
+    console.log('Final payload with correct field names:', payload);
     console.log('Stringified payload:', JSON.stringify(payload));
-    console.log('Request URL:', `${API_URL}/lists/${listId}/items/reorder`);
 
-    // Add axios request config logging
-    const config = {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      }
-    };
-    console.log('Request config:', config);
-
-    // Make the request with explicit config
-    const response = await apiClient.put(`/lists/${listId}/items/reorder`, payload, config);
+    // Make the request
+    const response = await apiClient.put(`/lists/${listId}/items/reorder`, payload);
     console.log('Successful response:', response.data);
     return response.data;
   } catch (error) {
@@ -175,24 +166,18 @@ export const updateItemsOrder = async (listId, itemOrderData) => {
       if (error.response.data?.detail) {
         console.error('Error detail:', error.response.data.detail);
 
-        // Log validation errors in more detail if available
+        // Log validation errors in more detail
         if (Array.isArray(error.response.data.detail)) {
           error.response.data.detail.forEach((err, index) => {
             console.error(`Validation error ${index + 1}:`, err);
           });
         }
       }
-    } else if (error.request) {
-      console.error('Error request (no response):', error.request);
-    } else {
-      console.error('Error message:', error.message);
     }
 
     throw new Error(error.response?.data?.detail || 'Failed to update item order');
   }
 };
-
-// Add this function to your services/api.js
 
 export const testReorderModel = async () => {
   try {
@@ -255,6 +240,32 @@ export const testSimpleReorderModel = async () => {
     console.error('Simple test error:', error);
     if (error.response) {
       console.error('Simple test error response:', error.response.data);
+    }
+    throw error;
+  }
+};
+
+// Add this to your services/api.js file
+export const testWithItemId = async () => {
+  try {
+    // Create a test payload with the item_id field instead of id
+    const payload = {
+      items: [
+        { item_id: "123456789012345678901234", position: 0 },
+        { item_id: "123456789012345678901235", position: 1 },
+        { item_id: "123456789012345678901236", position: 2 }
+      ]
+    };
+
+    console.log('Sending payload with item_id field:', payload);
+
+    const response = await apiClient.post('/lists/test-reorder', payload);
+    console.log('Test response with item_id:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Test error with item_id:', error);
+    if (error.response) {
+      console.error('Error response with item_id:', error.response.data);
     }
     throw error;
   }
