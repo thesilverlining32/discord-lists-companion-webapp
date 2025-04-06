@@ -19,6 +19,9 @@ import { CSS } from '@dnd-kit/utilities';
 import './ListDetail.css';
 import './ListItemStyles.css';
 
+import { testReorderModel, testSimpleReorderModel } from '../../services/api';
+
+
 // Sortable item component
 const SortableItem = ({
   item,
@@ -562,3 +565,23 @@ const ListDetail = () => {
 };
 
 export default ListDetail;
+
+const runModelTest = async () => {
+  try {
+    console.log('Running test...');
+    await testReorderModel();
+    console.log('Test completed');
+  } catch (error) {
+    console.error('Test failed');
+  }
+};
+
+const runSimpleModelTest = async () => {
+  try {
+    console.log('Running simple test...');
+    await testSimpleReorderModel();
+    console.log('Simple test completed');
+  } catch (error) {
+    console.error('Simple test failed');
+  }
+};

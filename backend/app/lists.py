@@ -554,109 +554,198 @@ async def search_users(
 
     return [UserModel.from_mongo(user) for user in users]
 
-@router.put("/lists/{list_id}/items/reorder", response_model=List[ListItemModel])
+@router.put("/lists/{list_id}/items/reorder")
 async def reorder_list_items(
     list_id: str,
-    request: Request,  # Add raw request parameter
+    request: Request,
     current_user: UserModel = Depends(get_current_user),
     db: AsyncIOMotorClient = Depends(get_database)
 ):
-    """
-    Reorder items in a list based on new positions
-    """
-    # Log the raw request body for debugging
-    raw_body = await request.body()
-    print(f"Raw request body: {raw_body}")
+    """Reorder items in a list based on new positions"""
 
+    print("=" * 50)
+    print(f"REORDER REQUEST START - list_id: {list_id}")
+    print("=" * 50)
+
+    # Log request headers
+    print(f"Request headers:")
+    for key, value in request.headers.items():
+        print(f"  {key}: {value}")
+
+    # Log raw request body
     try:
-        # Parse the request body manually for better error handling
-        body_json = await request.json()
-        print(f"Parsed JSON: {body_json}")
+        raw_body = await request.body()
+        print(f"Raw request body: {raw_body}")
 
-        # Try to validate against the model
+        # Try to decode the body as JSON
         try:
-            reorder_data = ReorderItemsRequest(**body_json)
-            print(f"Validated reorder data: {reorder_data}")
-        except Exception as e:
-            print(f"Validation error: {str(e)}")
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"Validation error: {str(e)}"
-            )
+            body_str = raw_body.decode('utf-8')
+            print(f"Body as string: {body_str}")
 
-        # Rest of the function remains the same - permissions check, etc.
-        if not current_user.is_approved:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="User is not approved to modify list items"
-            )
-
-        # Check if user has permission to edit the list
-        has_permission = await check_list_permissions(db, list_id, str(current_user.id), PermissionLevel.EDIT)
-        if not has_permission:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="User does not have permission to reorder items in this list"
-            )
-
-        # Validate the list exists
-        list_data = await db.lists.find_one({"_id": ObjectId(list_id)})
-        if not list_data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="List not found"
-            )
-
-        # Process each item in the reorder request
-        updated_items = []
-        print(f"Processing {len(reorder_data.items)} items")
-
-        for item_data in reorder_data.items:
+            # Try to parse as JSON
+            import json
             try:
-                print(f"Processing item: id={item_data.id}, position={item_data.position}")
-                item_id_obj = ObjectId(item_data.id)
-            except Exception as e:
-                print(f"Invalid ID format: {item_data.id}. Error: {str(e)}")
+                body_json = json.loads(body_str)
+                print(f"Body parsed as JSON: {body_json}")
+
+                # Check if the expected structure is present
+                if 'items' not in body_json:
+                    print("ERROR: 'items' key missing from request body")
+                    raise HTTPException(
+                        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                        detail="Request body must contain an 'items' key with an array of item data"
+                    )
+
+                # Validate the items array structure
+                items = body_json.get('items', [])
+                print(f"Items array (length: {len(items)}): {items}")
+
+                # Check each item in the array
+                for i, item in enumerate(items):
+                    print(f"Item {i}: {item}")
+                    if not isinstance(item, dict):
+                        print(f"ERROR: Item {i} is not a dictionary")
+                        raise HTTPException(
+                            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail=f"Item at position {i} must be an object with 'id' and 'position' fields"
+                        )
+
+                    # Check if id and position are present
+                    if 'id' not in item:
+                        print(f"ERROR: Item {i} missing 'id' field")
+                        raise HTTPException(
+                            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail=f"Item at position {i} missing required 'id' field"
+                        )
+
+                    if 'position' not in item:
+                        print(f"ERROR: Item {i} missing 'position' field")
+                        raise HTTPException(
+                            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail=f"Item at position {i} missing required 'position' field"
+                        )
+
+                # Try to create a ReorderItemsRequest instance
+                try:
+                    from pydantic import ValidationError
+
+                    print("Attempting to create ReorderItemsRequest instance...")
+                    try:
+                        reorder_data = ReorderItemsRequest(**body_json)
+                        print(f"Successfully created ReorderItemsRequest: {reorder_data}")
+                    except ValidationError as e:
+                        print(f"ValidationError creating ReorderItemsRequest: {str(e)}")
+                        # Log detailed validation errors
+                        for error in e.errors():
+                            print(f"  Error: {error}")
+                        raise HTTPException(
+                            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail=f"Validation error: {str(e)}"
+                        )
+                    except Exception as e:
+                        print(f"Exception creating ReorderItemsRequest: {str(e)}")
+                        raise HTTPException(
+                            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                            detail=f"Error creating ReorderItemsRequest: {str(e)}"
+                        )
+
+                    # Try to create ItemOrderData instances
+                    print("Checking individual ItemOrderData instances...")
+                    for i, item_data in enumerate(body_json.get('items', [])):
+                        try:
+                            from app.models import ItemOrderData
+                            item = ItemOrderData(**item_data)
+                            print(f"  Item {i} validated successfully: {item}")
+                        except ValidationError as e:
+                            print(f"  ValidationError for item {i}: {str(e)}")
+                            for error in e.errors():
+                                print(f"    Error: {error}")
+                            raise HTTPException(
+                                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                detail=f"Validation error for item {i}: {str(e)}"
+                            )
+                        except Exception as e:
+                            print(f"  Exception for item {i}: {str(e)}")
+                            raise HTTPException(
+                                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                detail=f"Error validating item {i}: {str(e)}"
+                            )
+
+                    # If we get here, validation passed
+                    print("All validation passed successfully!")
+
+                    # Process the reorder request
+                    # (Rest of your existing code here)
+
+                except ImportError as e:
+                    print(f"ImportError: {str(e)}")
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail=f"Server error: {str(e)}"
+                    )
+
+            except json.JSONDecodeError as e:
+                print(f"JSONDecodeError: {str(e)}")
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Invalid item ID format: {item_data.id}"
+                    detail=f"Invalid JSON format: {str(e)}"
                 )
 
-            # Verify the item exists and belongs to this list
-            item = await db.list_items.find_one({"_id": item_id_obj})
-            if not item:
-                print(f"Item not found: {item_data.id}")
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Item {item_data.id} not found"
-                )
-
-            if item.get("list_id") != list_id:
-                print(f"Item {item_data.id} belongs to list {item.get('list_id')}, not {list_id}")
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"Item {item_data.id} does not belong to list {list_id}"
-                )
-
-            # Update the item's position
-            print(f"Updating position for item {item_data.id} to {item_data.position}")
-            await db.list_items.update_one(
-                {"_id": item_id_obj},
-                {"$set": {"position": item_data.position}}
+        except UnicodeDecodeError as e:
+            print(f"UnicodeDecodeError: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Request body is not valid UTF-8: {str(e)}"
             )
-
-            # Get the updated item
-            updated_item = await db.list_items.find_one({"_id": item_id_obj})
-            updated_items.append(ListItemModel(**updated_item))
-
-        # Return the updated items sorted by position
-        result = sorted(updated_items, key=lambda x: x.position)
-        print(f"Returning {len(result)} updated items")
-        return result
 
     except Exception as e:
-        print(f"Error reordering items: {str(e)}")
+        print(f"Error reading request body: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to reorder items: {str(e)}"
+            detail=f"Server error reading request: {str(e)}"
         )
+
+    # Placeholder for the rest of your function
+    print("=" * 50)
+    print("REORDER REQUEST END")
+    print("=" * 50)
+
+    # To be replaced with your actual implementation
+    return {"message": "Debugging mode, implementation to follow"}
+
+@router.post("/lists/test-reorder", status_code=status.HTTP_200_OK)
+async def test_reorder_model(request: Request):
+    """Test endpoint to validate the ReorderItemsRequest model"""
+    try:
+        # Log raw request
+        raw_body = await request.body()
+        print(f"TEST ENDPOINT - Raw body: {raw_body}")
+
+        # Parse as JSON
+        body_str = raw_body.decode('utf-8')
+        import json
+        body_json = json.loads(body_str)
+        print(f"TEST ENDPOINT - Parsed JSON: {body_json}")
+
+        # Try to validate with our model
+        from app.models import ReorderItemsRequest, ItemOrderData
+
+        # Try validating ItemOrderData first
+        if 'items' in body_json and len(body_json['items']) > 0:
+            first_item = body_json['items'][0]
+            print(f"TEST ENDPOINT - First item: {first_item}")
+            item_model = ItemOrderData(**first_item)
+            print(f"TEST ENDPOINT - Item model validated: {item_model}")
+
+        # Then validate the whole request
+        model = ReorderItemsRequest(**body_json)
+        print(f"TEST ENDPOINT - Full model validated: {model}")
+
+        # Return success with the validated model
+        return {"success": True, "model": model.model_dump()}
+
+    except Exception as e:
+        print(f"TEST ENDPOINT - Error: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return {"success": False, "error": str(e)}
