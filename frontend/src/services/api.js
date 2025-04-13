@@ -128,54 +128,31 @@ export const setListPublic = (listId, isPublic) => apiClient.put(`/lists/${listI
  */
 export const updateItemsOrder = async (listId, itemOrderData) => {
   try {
-    // Debug logging before any transformations
+    // Log data for debugging
     console.log('Original itemOrderData:', itemOrderData);
-
-    // IMPORTANT: Using camelCase 'item_id' instead of 'id' to match the backend model
-    // This is likely the source of our validation errors
-    const formattedData = itemOrderData.map(item => ({
-      item_id: String(item.id),  // Changed from 'id' to 'item_id'
-      position: Number(item.position)
-    }));
-
-    // Log the formatted data
-    console.log('Formatted itemOrderData with correct field names:', formattedData);
 
     // Create the payload with the correctly named fields
     const payload = {
-      items: formattedData
+      items: itemOrderData.map(item => ({
+        item_id: String(item.id),
+        position: Number(item.position)
+      }))
     };
 
-    // Log the final payload
-    console.log('Final payload with correct field names:', payload);
+    console.log('Formatted payload:', payload);
     console.log('Stringified payload:', JSON.stringify(payload));
 
-    // Make the request
-    const response = await apiClient.put(`/lists/${listId}/items/reorder`, payload);
-    console.log('Successful response:', response.data);
+    // Use the new endpoint
+    const response = await apiClient.put(`/lists/${listId}/reorder`, payload);
+    console.log('Success response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error updating item order:', error);
-
-    // Enhanced error logging
     if (error.response) {
       console.error('Error status:', error.response.status);
-      console.error('Error headers:', error.response.headers);
       console.error('Error data:', error.response.data);
-
-      if (error.response.data?.detail) {
-        console.error('Error detail:', error.response.data.detail);
-
-        // Log validation errors in more detail
-        if (Array.isArray(error.response.data.detail)) {
-          error.response.data.detail.forEach((err, index) => {
-            console.error(`Validation error ${index + 1}:`, err);
-          });
-        }
-      }
     }
-
-    throw new Error(error.response?.data?.detail || 'Failed to update item order');
+    throw error;
   }
 };
 

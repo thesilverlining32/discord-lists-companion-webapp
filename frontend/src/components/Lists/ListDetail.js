@@ -354,10 +354,9 @@ const ListDetail = () => {
           }));
 
           console.log('Preparing to send order data:', itemOrderData);
-          console.log('JSON payload:', JSON.stringify({ items: itemOrderData }));
 
-          // Use the debug endpoint instead for testing
-          await updateItemsOrderDebug(listId, itemOrderData);
+          // Send the updated order to the backend
+          await updateItemsOrder(listId, itemOrderData);
           setIsOrderChanged(false);
         } catch (error) {
           console.error('Error updating item order:', error);

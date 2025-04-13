@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Request, Body
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
 from typing import List, Optional
@@ -887,3 +887,50 @@ async def debug_reorder_items(list_id: str, request: Request):
         "success": False,
         "reason": "This is a debug endpoint that only logs information"
     }
+
+# Define a simple schema class directly in the endpoint file
+class ItemOrder(BaseModel):
+    item_id: str
+    position: int
+
+class ReorderRequest(BaseModel):
+    items: List[ItemOrder]
+
+@router.put("/lists/{list_id}/reorder", status_code=status.HTTP_200_OK)
+async def reorder_items(
+    list_id: str,
+    data: ReorderRequest,
+    current_user: UserModel = Depends(get_current_user),
+    db: AsyncIOMotorClient = Depends(get_database)
+):
+    """Reorder items in a list"""
+    print(f"\nReordering items for list: {list_id}")
+    print(f"Received data: {data}")
+
+    # Check user permissions
+    has_permission = await check_list_permissions(db, list_id, str(current_user.id), PermissionLevel.EDIT)
+    if not has_permission:
+        raise HTTPException(status_code=403, detail="User does not have permission to reorder items in this list")
+
+    # Process each item
+    for item in data.items:
+        # Update position in database
+        print(f"Updating item {item.item_id} to position {item.position}")
+        try:
+            result = await db.list_items.update_one(
+                {"_id": ObjectId(item.item_id), "list_id": list_id},
+                {"$set": {"position": item.position}}
+            )
+            print(f"Update result: matched={result.matched_count}, modified={result.modified_count}")
+
+            if result.matched_count == 0:
+                print(f"Item {item.item_id} not found in list {list_id}")
+                raise HTTPException(status_code=404, detail=f"Item {item.item_id} not found in list {list_id}")
+
+        except Exception as e:
+            print(f"Error updating item {item.item_id}: {str(e)}")
+            if not isinstance(e, HTTPException):
+                raise HTTPException(status_code=500, detail=f"Error updating item {item.item_id}")
+            raise e
+
+    return {"message": "Items reordered successfully", "items_updated": len(data.items)}
