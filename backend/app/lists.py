@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Body
 from motor.motor_asyncio import AsyncIOMotorClient
 from bson import ObjectId
+from pydantic import BaseModel, Field
 from typing import List, Optional
 from app.auth import get_current_user
 from app.models import (
