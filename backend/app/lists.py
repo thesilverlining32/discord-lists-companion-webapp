@@ -16,6 +16,7 @@ from app.models import (
     ItemOrderData
 )
 from app.config import settings
+from datetime import datetime
 
 router = APIRouter()
 
@@ -935,3 +936,144 @@ async def reorder_items(
             raise e
 
     return {"message": "Items reordered successfully", "items_updated": len(data.items)}
+
+@router.post("/lists/{list_id}/items/{item_id}/review", response_model=ItemReviewModel)
+async def add_or_update_item_review(
+    list_id: str,
+    item_id: str,
+    review_data: ItemReviewCreateRequest,
+    current_user: UserModel = Depends(get_current_user),
+    db: AsyncIOMotorClient = Depends(get_database)
+):
+    if not current_user.is_approved:
+        raise HTTPException(status_code=403, detail="User is not approved to review list items")
+
+    # Validate rating if provided
+    if review_data.rating is not None and (review_data.rating < 1 or review_data.rating > 5):
+        raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
+
+    # Check if user has edit permission for this list
+    has_permission = await check_list_permissions(db, list_id, str(current_user.id), PermissionLevel.READ)
+    if not has_permission:
+        raise HTTPException(status_code=403, detail="User does not have permission to review items in this list")
+
+    # Check if the item exists
+    existing_item = await db.list_items.find_one({"_id": ObjectId(item_id), "list_id": list_id})
+    if existing_item is None:
+        raise HTTPException(status_code=404, detail="List item not found")
+
+    now = datetime.utcnow()
+
+    # Check if the user already has a review for this item
+    existing_review = await db.item_reviews.find_one({
+        "list_id": list_id,
+        "item_id": item_id,
+        "user_id": str(current_user.id)
+    })
+
+    if existing_review:
+        # Update existing review
+        update_data = {}
+        if review_data.rating is not None:
+            update_data["rating"] = review_data.rating
+        if review_data.comment is not None:
+            update_data["comment"] = review_data.comment
+        update_data["updated_at"] = now
+        update_data["user_name"] = current_user.username  # Update username in case it changed
+
+        await db.item_reviews.update_one(
+            {"_id": existing_review["_id"]},
+            {"$set": update_data}
+        )
+
+        updated_review = await db.item_reviews.find_one({"_id": existing_review["_id"]})
+        return ItemReviewModel(**updated_review)
+    else:
+        # Create new review
+        new_review = {
+            "list_id": list_id,
+            "item_id": item_id,
+            "user_id": str(current_user.id),
+            "user_name": current_user.username,
+            "rating": review_data.rating,
+            "comment": review_data.comment,
+            "created_at": now,
+            "updated_at": now
+        }
+
+        result = await db.item_reviews.insert_one(new_review)
+        created_review = await db.item_reviews.find_one({"_id": result.inserted_id})
+        return ItemReviewModel(**created_review)
+
+@router.get("/lists/{list_id}/items/{item_id}/reviews", response_model=List[ItemReviewModel])
+async def get_item_reviews(
+    list_id: str,
+    item_id: str,
+    current_user: UserModel = Depends(get_current_user),
+    db: AsyncIOMotorClient = Depends(get_database)
+):
+    # Check if user has read permission for this list
+    has_permission = await check_list_permissions(db, list_id, str(current_user.id), PermissionLevel.READ)
+    if not has_permission:
+        raise HTTPException(status_code=403, detail="User does not have permission to view reviews for this item")
+
+    # Get all reviews for this item
+    cursor = db.item_reviews.find({"list_id": list_id, "item_id": item_id})
+    reviews = await cursor.to_list(length=None)
+
+    return [ItemReviewModel(**review) for review in reviews]
+
+@router.get("/lists/{list_id}/items/{item_id}/reviews/me", response_model=Optional[ItemReviewModel])
+async def get_my_item_review(
+    list_id: str,
+    item_id: str,
+    current_user: UserModel = Depends(get_current_user),
+    db: AsyncIOMotorClient = Depends(get_database)
+):
+    # Check if user has read permission for this list
+    has_permission = await check_list_permissions(db, list_id, str(current_user.id), PermissionLevel.READ)
+    if not has_permission:
+        raise HTTPException(status_code=403, detail="User does not have permission to view reviews for this item")
+
+    # Get the current user's review
+    review = await db.item_reviews.find_one({
+        "list_id": list_id,
+        "item_id": item_id,
+        "user_id": str(current_user.id)
+    })
+
+    if not review:
+        return None
+
+    return ItemReviewModel(**review)
+
+@router.get("/lists/{list_id}/items/{item_id}/rating")
+async def get_item_average_rating(
+    list_id: str,
+    item_id: str,
+    current_user: UserModel = Depends(get_current_user),
+    db: AsyncIOMotorClient = Depends(get_database)
+):
+    # Check if user has read permission for this list
+    has_permission = await check_list_permissions(db, list_id, str(current_user.id), PermissionLevel.READ)
+    if not has_permission:
+        raise HTTPException(status_code=403, detail="User does not have permission to view ratings for this item")
+
+    # Get all reviews with ratings for this item
+    cursor = db.item_reviews.find(
+        {"list_id": list_id, "item_id": item_id, "rating": {"$ne": None}}
+    )
+    reviews = await cursor.to_list(length=None)
+
+    if not reviews:
+        return {"average_rating": None, "count": 0}
+
+    # Calculate average rating
+    total_rating = sum(review["rating"] for review in reviews if review["rating"] is not None)
+    count = len(reviews)
+    average_rating = total_rating / count if count > 0 else None
+
+    return {
+        "average_rating": round(average_rating, 1) if average_rating is not None else None,
+        "count": count
+    }

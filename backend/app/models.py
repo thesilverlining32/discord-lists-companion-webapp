@@ -139,3 +139,28 @@ class ReorderItemsRequest(BaseModel):
         arbitrary_types_allowed=True,
         json_encoders={ObjectId: str}
     )
+
+class ItemReviewModel(BaseModel):
+    id: Optional[PyObjectId] = Field(default_factory=PyObjectId, alias="_id")
+    list_id: str
+    item_id: str
+    user_id: str
+    user_name: Optional[str] = None
+    rating: Optional[int] = None
+    comment: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_encoders={ObjectId: str}
+    )
+
+class ItemReviewCreateRequest(BaseModel):
+    rating: Optional[int] = None
+    comment: Optional[str] = None
+
+    model_config = ConfigDict(
+        populate_by_name=True
+    )

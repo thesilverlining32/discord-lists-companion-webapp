@@ -285,3 +285,16 @@ export const testDebugRequest = async (payload) => {
     throw error;
   }
 };
+
+// New endpoints for item reviews
+export const getItemReviews = (listId, itemId) =>
+  apiClient.get(`/lists/${listId}/items/${itemId}/reviews`);
+
+export const getMyItemReview = (listId, itemId) =>
+  apiClient.get(`/lists/${listId}/items/${itemId}/reviews/me`);
+
+export const addOrUpdateItemReview = (listId, itemId, data) =>
+  apiClient.post(`/lists/${listId}/items/${itemId}/review`, data);
+
+export const getItemAverageRating = (listId, itemId) =>
+  apiClient.get(`/lists/${listId}/items/${itemId}/rating`);
