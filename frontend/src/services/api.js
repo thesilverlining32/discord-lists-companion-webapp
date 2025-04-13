@@ -225,9 +225,9 @@ export const testSimpleReorderModel = async () => {
     // Create a simple test payload
     const payload = {
       items: [
-        { id: "123456789012345678901234", position: 0 },
-        { id: "123456789012345678901235", position: 1 },
-        { id: "123456789012345678901236", position: 2 }
+        { item_id: "123456789012345678901234", position: 0 },
+        { item_id: "123456789012345678901235", position: 1 },
+        { item_id: "123456789012345678901236", position: 2 }
       ]
     };
 

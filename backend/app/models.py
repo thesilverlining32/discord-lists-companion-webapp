@@ -121,8 +121,8 @@ class ShareListRequest(BaseModel):
     )
 
 class ItemOrderData(BaseModel):
-    # Change this to match what's being sent by the frontend
-    item_id: str = Field(..., description="ID of the item to reorder")
+    # Change field definition to accept either id or item_id
+    id: str = Field(..., description="ID of the item to reorder", alias="item_id")
     position: int = Field(..., description="New position of the item")
 
     model_config = ConfigDict(
