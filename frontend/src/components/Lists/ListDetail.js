@@ -85,11 +85,11 @@ const SortableItem = ({
 
         <div className="flex items-center space-x-2">
           {/* Rating display */}
-          <div className={`rating-display ${item.averageRating ? 'has-rating' : 'no-rating'}`}>
-            <Star className={`h-4 w-4 mr-1 ${item.averageRating ? 'text-yellow-400 fill-yellow-400' : ''}`} />
+          <div className={`rating-display ${item.average_rating ? 'has-rating' : 'no-rating'}`}>
+            <Star className={`h-4 w-4 mr-1 ${item.average_rating ? 'text-yellow-400 fill-yellow-400' : ''}`} />
             <span className="text-sm">
-              {item.averageRating ? `${item.averageRating.toFixed(1)}` : 'Rate'}
-              {item.reviewCount > 0 && ` (${item.reviewCount})`}
+              {item.average_rating ? `${item.average_rating}` : 'Rate'}
+              {item.review_count > 0 && ` (${item.review_count})`}
             </span>
           </div>
 

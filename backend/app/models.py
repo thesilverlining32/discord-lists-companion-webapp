@@ -91,8 +91,10 @@ class ListItemModel(BaseModel):
     description: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
     image_url: Optional[str] = None
-    rating: Optional[int] = None
-    position: Optional[int] = 0  # Add position field with default value of 0
+    rating: Optional[int] = None  # Keep for backward compatibility
+    position: Optional[int] = 0
+    average_rating: Optional[float] = None  # Add new field
+    review_count: Optional[int] = 0  # Add new field
 
     model_config = ConfigDict(
         populate_by_name=True,

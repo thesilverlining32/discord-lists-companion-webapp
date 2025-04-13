@@ -423,6 +423,23 @@ async def get_list_items(
         cursor = db.list_items.find({"list_id": list_id}).sort("position", 1)
         items = await cursor.to_list(length=None)
 
+        # Add average rating and review count for each item
+        for item in items:
+            # Get all reviews with ratings for this item
+            reviews_cursor = db.item_reviews.find(
+                {"list_id": list_id, "item_id": str(item["_id"]), "rating": {"$ne": None}}
+            )
+            reviews = await reviews_cursor.to_list(length=None)
+
+            if reviews:
+                total_rating = sum(review["rating"] for review in reviews if review["rating"] is not None)
+                count = len(reviews)
+                item["average_rating"] = round(total_rating / count, 1) if count > 0 else None
+                item["review_count"] = count
+            else:
+                item["average_rating"] = None
+                item["review_count"] = 0
+
         return [ListItemModel(**item_data) for item_data in items]
     except Exception as e:
         print(f"Error fetching list items: {str(e)}")
