@@ -21,6 +21,7 @@ import './ListItemStyles.css';
 
 import { testReorderModel, testSimpleReorderModel } from '../../services/api';
 
+import { updateItemsOrderDebug } from '../../services/api';
 
 // Sortable item component
 const SortableItem = ({
@@ -355,8 +356,8 @@ const ListDetail = () => {
           console.log('Preparing to send order data:', itemOrderData);
           console.log('JSON payload:', JSON.stringify({ items: itemOrderData }));
 
-          // Send the updated order to the backend
-          await updateItemsOrder(listId, itemOrderData);
+          // Use the debug endpoint instead for testing
+          await updateItemsOrderDebug(listId, itemOrderData);
           setIsOrderChanged(false);
         } catch (error) {
           console.error('Error updating item order:', error);

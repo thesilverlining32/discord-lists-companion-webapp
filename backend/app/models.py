@@ -121,9 +121,9 @@ class ShareListRequest(BaseModel):
     )
 
 class ItemOrderData(BaseModel):
-    # Change field definition to accept either id or item_id
-    id: str = Field(..., description="ID of the item to reorder", alias="item_id")
-    position: int = Field(..., description="New position of the item")
+    # Use an alias to accept 'item_id' while using 'id' internally
+    id: str = Field(alias='item_id', description="ID of the item to reorder")
+    position: int = Field(description="New position of the item")
 
     model_config = ConfigDict(
         populate_by_name=True,

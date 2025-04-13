@@ -579,7 +579,7 @@ async def reorder_list_items(
         # Parse JSON manually to avoid model validation issues
         import json
         body_json = json.loads(raw_body.decode('utf-8'))
-        print(f"Parsed JSON: {body_json}")
+        print(f"Parsed JSON: {json.dumps(body_json, indent=2)}")
 
         if 'items' not in body_json or not isinstance(body_json['items'], list):
             raise HTTPException(status_code=422, detail="Request must include 'items' array")
@@ -734,3 +734,156 @@ async def test_reorder_model(request: Request):
         import traceback
         traceback.print_exc()
         return {"success": False, "error": str(e)}
+
+# Add this to your lists.py file at the bottom
+
+@router.put("/debug-request")
+async def debug_request(request: Request):
+    """Debug endpoint that logs all request details"""
+    print("\n" + "=" * 80)
+    print("DEBUG REQUEST ENDPOINT")
+    print("=" * 80)
+
+    # Print request details
+    print(f"Method: {request.method}")
+    print(f"URL: {request.url}")
+
+    # Print headers
+    print("\nHEADERS:")
+    for name, value in request.headers.items():
+        print(f"  {name}: {value}")
+
+    # Print body
+    try:
+        body = await request.body()
+        print("\nRAW BODY:")
+        print(body)
+
+        if body:
+            try:
+                body_str = body.decode('utf-8')
+                print("\nBODY AS STRING:")
+                print(body_str)
+
+                try:
+                    import json
+                    body_json = json.loads(body_str)
+                    print("\nBODY AS JSON:")
+                    print(json.dumps(body_json, indent=2))
+
+                    # If it has an 'items' key, examine its structure
+                    if 'items' in body_json and isinstance(body_json['items'], list):
+                        print("\nEXAMINING ITEMS:")
+                        for i, item in enumerate(body_json['items']):
+                            print(f"Item {i}:")
+                            print(f"  Type: {type(item)}")
+                            print(f"  Contents: {item}")
+                            print(f"  Keys: {list(item.keys())}")
+                            for key, value in item.items():
+                                print(f"    {key}: {value} (type: {type(value)})")
+                except json.JSONDecodeError as e:
+                    print(f"\nNot valid JSON: {e}")
+            except UnicodeDecodeError as e:
+                print(f"\nNot valid UTF-8: {e}")
+    except Exception as e:
+        print(f"\nError reading body: {e}")
+
+    print("=" * 80)
+    return {"message": "Request details logged to console"}
+
+@router.put("/lists/{list_id}/items/debug-reorder")
+async def debug_reorder_items(list_id: str, request: Request):
+    """Debug version of the reorder items endpoint that just logs information"""
+    print("\n" + "=" * 80)
+    print(f"DEBUG REORDER ITEMS - list_id: {list_id}")
+    print("=" * 80)
+
+    # Print raw request
+    try:
+        body = await request.body()
+        print(f"Raw request body: {body}")
+
+        if body:
+            try:
+                body_str = body.decode('utf-8')
+                print(f"Body as string: {body_str}")
+
+                try:
+                    import json
+                    body_json = json.loads(body_str)
+                    print(f"Body as JSON: {json.dumps(body_json, indent=2)}")
+
+                    # Try to parse as a model
+                    from app.models import ReorderItemsRequest, ItemOrderData
+                    print("\nTRYING MODEL VALIDATION:")
+
+                    # First try to validate an individual item
+                    if 'items' in body_json and body_json['items']:
+                        first_item = body_json['items'][0]
+                        print(f"First item: {first_item}")
+
+                        # Try direct validation first
+                        try:
+                            print("Validating with direct fields...")
+                            item = ItemOrderData(**first_item)
+                            print(f"Successful validation: {item}")
+                        except Exception as e:
+                            print(f"Direct validation failed: {e}")
+
+                            # Try with field alias mapping
+                            try:
+                                print("Trying field alias mapping...")
+                                if 'item_id' in first_item and 'id' not in first_item:
+                                    test_item = {'id': first_item['item_id'], 'position': first_item['position']}
+                                    print(f"Transformed item: {test_item}")
+                                    item = ItemOrderData(**test_item)
+                                    print(f"Validation with mapping succeeded: {item}")
+                            except Exception as e:
+                                print(f"Alias mapping validation failed: {e}")
+
+                    # Now try full model validation
+                    try:
+                        print("\nValidating full request model...")
+                        model = ReorderItemsRequest(**body_json)
+                        print(f"Full model validation succeeded: {model}")
+                    except Exception as e:
+                        print(f"Full model validation failed: {e}")
+                        import traceback
+                        traceback.print_exc()
+
+                        # Try field mapping for the whole payload
+                        try:
+                            print("\nTrying with field mapping for all items...")
+                            mapped_items = []
+                            for item in body_json.get('items', []):
+                                if 'item_id' in item and 'id' not in item:
+                                    mapped_items.append({
+                                        'id': item['item_id'],
+                                        'position': item['position']
+                                    })
+                                else:
+                                    mapped_items.append(item)
+
+                            mapped_payload = {'items': mapped_items}
+                            print(f"Mapped payload: {json.dumps(mapped_payload, indent=2)}")
+                            model = ReorderItemsRequest(**mapped_payload)
+                            print(f"Validation with mapping succeeded: {model}")
+                        except Exception as e:
+                            print(f"Field mapping validation still failed: {e}")
+                            traceback.print_exc()
+                except json.JSONDecodeError as e:
+                    print(f"Not valid JSON: {e}")
+            except UnicodeDecodeError as e:
+                print(f"Not valid UTF-8: {e}")
+    except Exception as e:
+        print(f"Error reading request: {e}")
+
+    print("=" * 80)
+
+    # Return detailed information
+    return {
+        "message": "Debug information logged to console",
+        "list_id": list_id,
+        "success": False,
+        "reason": "This is a debug endpoint that only logs information"
+    }

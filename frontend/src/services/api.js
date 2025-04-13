@@ -270,3 +270,41 @@ export const testWithItemId = async () => {
     throw error;
   }
 };
+
+export const updateItemsOrderDebug = async (listId, itemOrderData) => {
+  try {
+    console.log('Debug - Original itemOrderData:', itemOrderData);
+
+    // Create the payload with the correctly named fields
+    const payload = {
+      items: itemOrderData.map(item => ({
+        item_id: String(item.id),  // Keep the field name as item_id
+        position: Number(item.position)
+      }))
+    };
+
+    console.log('Debug - Final payload for debug endpoint:', payload);
+    console.log('Debug - Stringified payload:', JSON.stringify(payload));
+
+    // Call the debug endpoint
+    const response = await apiClient.put(`/lists/${listId}/items/debug-reorder`, payload);
+    console.log('Debug - Response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Debug - Error:', error);
+    throw error;
+  }
+};
+
+// Also add a function to test the raw debug endpoint
+export const testDebugRequest = async (payload) => {
+  try {
+    console.log('Sending test payload to debug endpoint:', payload);
+    const response = await apiClient.put('/debug-request', payload);
+    console.log('Debug response:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Debug test error:', error);
+    throw error;
+  }
+};
