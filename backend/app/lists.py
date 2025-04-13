@@ -611,11 +611,11 @@ async def reorder_list_items(
                         )
 
                     # Check if id and position are present
-                    if 'id' not in item:
-                        print(f"ERROR: Item {i} missing 'id' field")
+                    if 'id' not in item and 'item_id' not in item:
+                        print(f"ERROR: Item {i} missing both 'id' and 'item_id' fields")
                         raise HTTPException(
                             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                            detail=f"Item at position {i} missing required 'id' field"
+                            detail=f"Item at position {i} missing required 'id' or 'item_id' field"
                         )
 
                     if 'position' not in item:
@@ -674,8 +674,7 @@ async def reorder_list_items(
                     # If we get here, validation passed
                     print("All validation passed successfully!")
 
-                    # Process the reorder request
-                    # (Rest of your existing code here)
+                    # Continue with the rest of your function...
 
                 except ImportError as e:
                     print(f"ImportError: {str(e)}")
@@ -705,13 +704,12 @@ async def reorder_list_items(
             detail=f"Server error reading request: {str(e)}"
         )
 
-    # Placeholder for the rest of your function
     print("=" * 50)
     print("REORDER REQUEST END")
     print("=" * 50)
 
-    # To be replaced with your actual implementation
-    return {"message": "Debugging mode, implementation to follow"}
+    # For now, return a placeholder response to test debugging
+    return {"message": "Debugging mode", "list_id": list_id}
 
 @router.post("/lists/test-reorder", status_code=status.HTTP_200_OK)
 async def test_reorder_model(request: Request):
