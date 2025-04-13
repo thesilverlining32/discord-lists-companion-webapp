@@ -13,7 +13,9 @@ from app.models import (
     ShareListRequest,
     PermissionLevel,
     ReorderItemsRequest,
-    ItemOrderData
+    ItemOrderData,
+    ItemReviewModel,
+    ItemReviewCreateRequest
 )
 from app.config import settings
 from datetime import datetime
